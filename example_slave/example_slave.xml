@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<node id="example_slave">
+	<node id="Reg1" address="0x0000" mask="0xFFFF" permission="rw" hw_permission="we" description="Register number one"/>
+	<node id="Reg2" address="0x0004" mask="0xFFFF" permission="rw" hw_permission="we" description="Register number two"/>
+</node>
