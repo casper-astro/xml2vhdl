@@ -2,17 +2,17 @@
 # Copyright (C) 2015
 # University of Oxford <http://www.ox.ac.uk/>
 # Department of Physics
-# 
-# This program is free software: you can redistribute it and/or modify  
-# it under the terms of the GNU General Public License as published by  
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
 #
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranty of 
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 # General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License 
+# You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 # TODO:
@@ -32,8 +32,10 @@ import xml.etree.ElementTree as ET
 from xml2slave import Xml2Slave
 from xml2ic import Xml2Ic
 
+import xml2vhdl_logging
+logger = xml2vhdl_logging.config_logger(__name__)
 
-def xml2vhdl_exec(options, args, xml_file_name,type):
+def xml2vhdl_exec(options, args, xml_file_name, type):
     xml_file_path = helper.string_io.normalize_path(os.path.dirname(os.path.abspath(xml_file_name)))
     options.input_folder = []
     options.input_file = [helper.string_io.normalize_path(os.path.abspath(xml_file_name))]
@@ -90,33 +92,34 @@ if __name__ == '__main__':
                     for xml_done in compile_order:
                         if file_link == xml_done['output']:
                             # print "Dependency found"
-                            try:
-                                xml['depend_on'].remove(file_link)
-                            except:
-                                pass
+                            xml['depend_on'].remove(file_link)
                             stop = 0
         if stop == 1:
             break
 
     # Checking if there are unresolved dependencies
     if depend_tree != []:
-        print "Unresolved dependencies found: "
+        logger.warning("Unresolved dependencies found: ")
         for n in depend_tree:
-            print n
+            logger.warning('\t{}'
+                        .format(n))
         raw_input("Press a key to continue...")
 
-    print "Compile order: "
+    logger.info('-' * 80)
+    logger.info("Compile order:")
     for n in compile_order:
-        print n['id']
+        logger.info('\t{}'
+                    .format(n['id']))
 
     external_list = []
     xml_path_list = []
     for xml in compile_order:
-        print "Analysing", xml['file']
+        logger.info("Analysing: {}"
+                    .format(xml['file']))
         tree = ET.parse(xml['file'])
         root = tree.getroot()
         if root.get('hw_type') == "external":
             external_list.append(xml['file'])
         else:
             line_options.path = xml2vhdl_exec(line_options, line_args, xml['file'], root.get('hw_type'))
-    print external_list
+    logger.info(external_list)

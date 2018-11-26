@@ -2,69 +2,79 @@
 # Copyright (C) 2015
 # University of Oxford <http://www.ox.ac.uk/>
 # Department of Physics
-# 
-# This program is free software: you can redistribute it and/or modify  
-# it under the terms of the GNU General Public License as published by  
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
 #
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranty of 
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 # General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License 
+# You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import xml.etree.ElementTree as ET
 from optparse import OptionParser
 import os
 
-#format an hexadecimal as 32 bit with leading 0's
+import xml2vhdl_logging
+logger = xml2vhdl_logging.config_logger(__name__)
+
+
 def hex_format(input):
-   return format(input,'08x')
+   return format(input, '08x')
+
 
 def field_index(input):
     input_bin = format(input, '032b')
-    for idx, val in enumerate(input_bin):        
-        if val == '1':        
-            first_index = -idx+31
-            
+    for idx, val in enumerate(input_bin):
+        if val == '1':
+            first_index = -idx + 31
     return first_index
+
 
 def field_size(input):
     input_bin = format(input, '032b')
     consect_ones = 0
-    for idx, val in enumerate(input_bin):        
-        if val == '1':        
-            consect_ones = consect_ones + 1;
-            
+    for idx, val in enumerate(input_bin):
+        if val == '1':
+            consect_ones = consect_ones + 1
     return consect_ones
+
 
 def create_multifield_table_header():
     inputlist = []
     inputlist.append('<!DOCTYPE html>')
     inputlist.append('<html>')
     inputlist.append('<head>')
-    inputlist.append('<link rel="stylesheet" href="regtables.css">') # This is only required when testing scripts without using doxygen to apply the style to the tales
+    inputlist.append('<link rel="stylesheet" href="regtables.css">')
     inputlist.append('</head>')
     inputlist.append('<body>')
     inputlist.append('<h2>Auto Generated Register Tables</h2>')
-    inputlist.append('<p>The following tables have been automatically generated using the XML file used to create the Memory-Mapped Register locations.')
-    inputlist.append('Descriptions have been extracted from the XML file used to generate the Memory-Mapped Registers and their corresponding fields.</p>')    
+    inputlist.append('<p>The following tables have been automatically generated using the XML file used '
+                     'to create the Memory-Mapped Register locations.')
+    inputlist.append('Descriptions have been extracted from the XML file used to generate the '
+                     'Memory-Mapped Registers and their corresponding fields.</p>')
     return inputlist
-    
+
+
 def create_multifield_table(inputlist, title, offset):
-    inputlist.append('<h3>{} - {} Register</h3>'.format(offset, title))
+    inputlist.append('<h3>{} - {} Register</h3>'
+                     .format(offset, title))
     inputlist.append('<h4>Layout</h4>')
     inputlist.append('<table width="75%" class="doxtable">')
     inputlist.append('<thead>')
     inputlist.append('<tr>')   
     inputlist.append('<th colspan="4" align="left">Register</th>')
-    inputlist.append('<td colspan="28" align="left" id="{}"><tt><a href="#abstabentry{}">{}</a></tt></td>'.format(title, title, title))
+    inputlist.append('<td colspan="28" align="left" id="{}"><tt><a href="#abstabentry{}">{}</a></tt></td>'
+                     .format(title, title, title))
     inputlist.append('</tr>')
     inputlist.append('<tr>')
     inputlist.append('<th colspan="4" align="left">Offset</th>')
-    inputlist.append('<td colspan="28" align="left"><tt>{}</tt></td>'.format(offset))
+    inputlist.append('<td colspan="28" align="left"><tt>{}</tt></td>'
+                     .format(offset))
     inputlist.append('</tr>')
     inputlist.append('<tr>')    
     for n in range(0, 8):
@@ -72,14 +82,16 @@ def create_multifield_table(inputlist, title, offset):
     inputlist.append('</tr>')
     inputlist.append('<tr>')
     for n in range(31, -1, -1):
-        inputlist.append('<td align="center"><tt>{}</tt></td>'.format(n))
+        inputlist.append('<td align="center"><tt>{}</tt></td>'
+                         .format(n))
     inputlist.append('</tr>')
     inputlist.append('</thead>')
     return inputlist
 
 def create_absolute_addr_table(inputlist):
     inputlist.append('<h3>All Register</h3>')
-    inputlist.append('<p>The Absolute Addresses are shown at this level of hierachy. They may change if a connection')
+    inputlist.append('<p>The Absolute Addresses are shown at this level of hierachy. '
+                     'They may change if a connection')
     inputlist.append('to an upstream AXI4-Lite is made.</p>')
     inputlist.append('<table width="75%" class="doxtable" id="absolutetable">')
     inputlist.append('<thead>')
@@ -103,8 +115,10 @@ def pop_absolute_addr_table(htmltable, fieldlist):
     
     for field in no_duplicates:        
         htmltable.append('<tr>')   
-        htmltable.append('<td align="left" id="abstabentry{}"><tt><a href="#{}">{}</a></tt></td>'.format(field[0],field[0],field[0]))
-        htmltable.append('<td align="right"><tt>{}</tt></td>'.format(field[1]))
+        htmltable.append('<td align="left" id="abstabentry{}"><tt><a href="#{}">{}</a></tt></td>'
+                         .format(field[0],field[0],field[0]))
+        htmltable.append('<td align="right"><tt>{}</tt></td>'
+                         .format(field[1]))
         htmltable.append('</tr>')
     
     htmltable.append('</table>')
@@ -156,7 +170,8 @@ def generate_multifield_html_table(fieldlist):
         
         # Do we need a new table?
         if(last_register != register_name):
-            print '[INFO]: New Register: {}, Changed from: {}'.format(register_name, last_register)
+            logger.debug('New Register: {}, Changed from: {}'
+                         .format(register_name, last_register))
             last_register = register_name
             if existing_table == 0:
                 create_multifield_table(multifieldhtmltableentry, register_name, address)
@@ -170,16 +185,19 @@ def generate_multifield_html_table(fieldlist):
                 existing_table = 1
             else:
                 # Finalise Previous Table:             
-                print '[INFO]: Finalising Table for Register: {}'.format(register_name)                
+                logger.debug('Finalising Table for Register: {}'
+                             .format(register_name))
                 while total_bit_count < 32:    
                     null_flag = 1    
                     null_colspan = null_colspan + 1
                     total_bit_count = total_bit_count + 1
                 if null_flag == 1:
-                    if span == 1:                    
-                        newentry = '<td colspan="{}" height="200px" bgcolor="#BFC9CA"><span></span></td>'.format(null_colspan)
+                    if span == 1:
+                        newentry = ('<td colspan="{}" height="200px" bgcolor="#BFC9CA"><span></span></td>'
+                                    .format(null_colspan))
                     else:
-                        newentry = '<td colspan="{}" bgcolor="#BFC9CA"></td>'.format(null_colspan)
+                        newentry = ('<td colspan="{}" bgcolor="#BFC9CA"></td>'
+                                    .format(null_colspan))
                     multifieldhtmltableentry.append(newentry)
                     multifieldhtmltableentry.append('</tr>')
                     null_colspan = 0
@@ -188,13 +206,15 @@ def generate_multifield_html_table(fieldlist):
                 else:
                     multifieldhtmltableentry.append('</tr>')                
                 
-                print '[DEBUG]: close_multifield_table Table for Register: {}'.format(register_name)  
+                logger.debug('close_multifield_table Table for Register: {}'
+                             .format(register_name))
                 close_multifield_table(multifieldhtmltableentry)
-                print '[DEBUG]: pop_multifield_descriptions_table Table for Register: {}'.format(register_name)                 
+                logger.debug('pop_multifield_descriptions_table Table for Register: {}'
+                             .format(register_name))
                 pop_multifield_descriptions_table(multifieldhtmltableentry, current_register_description_list)
                 close_multifield_table(multifieldhtmltableentry)
                 current_register_description_list = []
-                current_register_description_list.append(field)    
+                current_register_description_list.append(field)
                 create_multifield_table(multifieldhtmltableentry, register_name, address)
                 multifieldhtmltableentry.append('<tr>')
                 current_index = 31
@@ -205,7 +225,8 @@ def generate_multifield_html_table(fieldlist):
             current_register_description_list.append(field)           
             existing_table = 1
         
-        print '[INFO]: Processing Register: {}, Field: {}'.format(register_name, name)
+        logger.debug('Processing Register: {}, Field: {}'
+                     .format(register_name, name))
         
         # print '[DEBUG]bit_incr: {}'.format(bit_incr)
         while current_index > int(bit_incr):
@@ -215,9 +236,11 @@ def generate_multifield_html_table(fieldlist):
             
         if null_flag  == 1:
             if span == 1:            
-                newentry = '<td colspan="{}" height="200px" bgcolor="#BFC9CA"><span></span></td>'.format(null_colspan)
+                newentry = ('<td colspan="{}" height="200px" bgcolor="#BFC9CA"><span></span></td>'
+                            .format(null_colspan))
             else:
-                newentry = '<td colspan="{}" bgcolor="#BFC9CA"></td>'.format(null_colspan)
+                newentry = ('<td colspan="{}" bgcolor="#BFC9CA"></td>'
+                            .format(null_colspan))
             total_bit_count = total_bit_count + null_colspan
             multifieldhtmltableentry.append(newentry)
             null_colspan = 0
@@ -225,9 +248,13 @@ def generate_multifield_html_table(fieldlist):
                 
         if current_index == int(bit_incr):
             if span == 1:            
-                newentry = '<td colspan="{}" height="200px" align="center" id="desctabentry{}"><span><tt><a href="#{}">{}</a></tt></span></td>'.format(colspan, name, name, name)
+                newentry = ('<td colspan="{}" height="200px" align="center" id="desctabentry{}">'
+                            '<span><tt><a href="#{}">{}</a></tt></span></td>'
+                            .format(colspan, name, name, name))
             else:
-                newentry = '<td colspan="{}" align="center" id="desctabentry{}"><tt><a href="#{}">{}</a></tt></td>'.format(colspan, name, name, name)
+                newentry = ('<td colspan="{}" align="center" id="desctabentry{}"><tt>'
+                            '<a href="#{}">{}</a></tt></td>'
+                            .format(colspan, name, name, name))
             multifieldhtmltableentry.append(newentry)
             total_bit_count = total_bit_count + colspan
             current_index = current_index - colspan
@@ -240,15 +267,18 @@ def generate_multifield_html_table(fieldlist):
     
     if null_flag == 1:
         if span == 1:
-            newentry = '<td colspan="{}" height="200px" bgcolor="#BFC9CA"><span></span></td>'.format(null_colspan)
+            newentry = ('<td colspan="{}" height="200px" bgcolor="#BFC9CA"><span></span></td>'
+                        .format(null_colspan))
         else:
-            newentry = '<td colspan="{}" bgcolor="#BFC9CA"></td>'.format(null_colspan)   
+            newentry = ('<td colspan="{}" bgcolor="#BFC9CA"></td>'
+                        .format(null_colspan))
         multifieldhtmltableentry.append(newentry)
         null_colspan = 0
         total_bit_count = 0
         null_flag = 0
         
-    print '[DEBUG]: Finalising Register with Empty LSB for Register: {}'.format(register_name) 
+    logger.debug('Finalising Register with Empty LSB for Register: {}'
+                 .format(register_name))
     multifieldhtmltableentry.append('</tr>')
     close_multifield_table(multifieldhtmltableentry)
     pop_multifield_descriptions_table(multifieldhtmltableentry, current_register_description_list)
@@ -257,10 +287,11 @@ def generate_multifield_html_table(fieldlist):
     
     return multifieldhtmltableentry
 
+
 def pop_multifield_descriptions_table(htmltable, fieldlist):
     
     descriptionheader = 0
-    print '[DEBUG]: <Description Table Generation>'  
+    logger.debug('<Description Table Generation>')
     if descriptionheader == 0:
         htmltable.append('<h4>Description(s):</h4>')
         descriptionheader = 1
@@ -272,10 +303,12 @@ def pop_multifield_descriptions_table(htmltable, fieldlist):
         if item not in no_duplicates:
             no_duplicates.append(item)
         else:
-            print '[DEBUG]: <Description Table Generation>: Duplicate Removed: {}'.format(item)  
+            logger.debug('<Description Table Generation>: Duplicate Removed: {}'
+                         .format(item))
     
     for field in no_duplicates:
-        print '[DEBUG]: <Description Table Generation>: {}'.format(field)        
+        logger.debug('<Description Table Generation>: {}'
+                     .format(field))
         register_name = field[0]
         address = field[1]
         bit = field[2]
@@ -293,36 +326,44 @@ def pop_multifield_descriptions_table(htmltable, fieldlist):
         htmltable.append('<table width="50%" class="doxtable">')
         htmltable.append('<thead>')
         htmltable.append('<tr>')
-        htmltable.append('<th align="center" width="100%" colspan="2">{}</th>'.format(name))
+        htmltable.append('<th align="center" width="100%" colspan="2">{}</th>'
+                         .format(name))
         htmltable.append('</tr>')        
         htmltable.append('<tr>')
         # htmltable.append('<th align="left" width="70%">{} Description</th>'.format(name))
         htmltable.append('<th align="left" width="15%">Register Name</th>')
-        htmltable.append('<td align="left" width="85%"><tt>{}[{}:{}]</tt></td>'.format(register_name,bit_upper,bit_lower))
+        htmltable.append('<td align="left" width="85%"><tt>{}[{}:{}]</tt></td>'
+                         .format(register_name,bit_upper,bit_lower))
         htmltable.append('</tr>')
         htmltable.append('<tr>')
         htmltable.append('<th align="left" width="15%">Offset</th>')
-        htmltable.append('<td align="left" width="15%"><tt>{}</tt></td>'.format(address))
+        htmltable.append('<td align="left" width="15%"><tt>{}</tt></td>'
+                         .format(address))
         htmltable.append('</tr>')
         htmltable.append('<tr>')
         htmltable.append('<th align="left" width="15%">Field Name</th>')
-        htmltable.append('<td align="left" width="15%" id="{}"><tt><a href="#desctabentry{}">{}</a></tt></td>'.format(name, name, name))
+        htmltable.append('<td align="left" width="15%" id="{}"><tt><a href="#desctabentry{}">{}</a></tt></td>'
+                         .format(name, name, name))
         htmltable.append('</tr>')
         htmltable.append('<tr>')
         htmltable.append('<th align="left" width="15%">Mask</th>')
-        htmltable.append('<td align="left" width="15%"><tt>{}</tt></td>'.format(mask))
+        htmltable.append('<td align="left" width="15%"><tt>{}</tt></td>'
+                         .format(mask))
         htmltable.append('</tr>')
         htmltable.append('<tr>')
         htmltable.append('<th align="left" width="15%">Permission</th>')
-        htmltable.append('<td align="left" width="15%"><tt>{}</tt></td>'.format(permission))
+        htmltable.append('<td align="left" width="15%"><tt>{}</tt></td>'
+                         .format(permission))
         htmltable.append('</tr>')
         htmltable.append('<tr>')
         htmltable.append('<th align="left" width="15%">Reset</th>')
-        htmltable.append('<td align="left" width="15%"><tt>{}</tt></td>'.format(reset_value))
+        htmltable.append('<td align="left" width="15%"><tt>{}</tt></td>'
+                         .format(reset_value))
         htmltable.append('</tr>')
         htmltable.append('<tr>')
         htmltable.append('<th align="left" width="15%">Description</th>')
-        htmltable.append('<td align="left" width="85%">{}</td>'.format(description))
+        htmltable.append('<td align="left" width="85%">{}</td>'
+                         .format(description))
         htmltable.append('</tr>')
         htmltable.append('</thead>')
     # htmltable.append('</table>')
@@ -361,51 +402,96 @@ class xml2html:
         for node in root.iter('node'):
             if 'address' in node.attrib.keys():
                 if 'mask' in node.attrib.keys():
-                    # print '[Single Field Register]', node.get('id')
-                    mask = hex_format(int(node.get('mask'),16))
+                    mask = hex_format(int(node.get('mask'), 16))
                     span = 0
                     if node.get('absolute_id'):
-                        addroffset = hex_format(int(node.get('absolute_offset'),16))
-                        newfield = [node.get('absolute_id'), "0x"+addroffset.upper(), field_index(int(node.get('mask'),16)), field_size(int(node.get('mask'),16)), node.get('permission'), node.get('id'), node.get('description'), node.get('mask'), node.get('hw_rst'), span]
+                        addroffset = hex_format(int(node.get('absolute_offset'), 16))
+                        newfield = [node.get('absolute_id'),
+                                    "0x" + addroffset.upper(),
+                                    field_index(int(node.get('mask'), 16)),
+                                    field_size(int(node.get('mask'), 16)),
+                                    node.get('permission'),
+                                    node.get('id'),
+                                    node.get('description'),
+                                    node.get('mask'),
+                                    node.get('hw_rst'), span]
                     else:
-                        addroffset = hex_format(int(node.get('address'),16))
-                        newfield = [node.get('id'), "0x"+addroffset.upper(), field_index(int(node.get('mask'),16)), field_size(int(node.get('mask'),16)), node.get('permission'), node.get('id'), node.get('description'), node.get('mask'), node.get('hw_rst'), span]
+                        addroffset = hex_format(int(node.get('address'), 16))
+                        newfield = [node.get('id'),
+                                    "0x" + addroffset.upper(),
+                                    field_index(int(node.get('mask'), 16)),
+                                    field_size(int(node.get('mask'), 16)),
+                                    node.get('permission'),
+                                    node.get('id'),
+                                    node.get('description'),
+                                    node.get('mask'),
+                                    node.get('hw_rst'), span]
 
                     alltableitems.append(newfield)
-                    # newitem = ["0x"+addroffset.upper(), "0x"+mask.upper(), node.get('permission'), node.get('id'), node.get('description')]
-                    # singlefieldtableitems.append(newitem)
                 else:
                     if 'description' in node.attrib.keys():
                         # print '[Multi-Field Register]', node.get('id')
                         if node.get('absolute_id'):
-                            multiaddroffset = hex_format(int(node.get('absolute_offset'),16))
+                            multiaddroffset = hex_format(int(node.get('absolute_offset'), 16))
                         else:
-                            multiaddroffset = hex_format(int(node.get('address'),16))
+                            multiaddroffset = hex_format(int(node.get('address'), 16))
                         # span = 1
                         for field in node.iter('node'):                           
                             if 'mask' in field.attrib.keys():
                                 span = 1                                
                                 if field.get('absolute_id'):
-                                    newfield = [node.get('absolute_id'), "0x"+multiaddroffset.upper(), field_index(int(field.get('mask'),16)), field_size(int(field.get('mask'),16)), field.get('permission'), field.get('id'), field.get('description'), field.get('mask'), field.get('hw_rst'), span]
+                                    newfield = [node.get('absolute_id'),
+                                                "0x" + multiaddroffset.upper(),
+                                                field_index(int(field.get('mask'), 16)),
+                                                field_size(int(field.get('mask'), 16)),
+                                                field.get('permission'),
+                                                field.get('id'),
+                                                field.get('description'),
+                                                field.get('mask'),
+                                                field.get('hw_rst'), span]
                                 else:
-                                    newfield = [node.get('id'), "0x"+multiaddroffset.upper(), field_index(int(field.get('mask'),16)), field_size(int(field.get('mask'),16)), field.get('permission'), field.get('id'), field.get('description'), field.get('mask'), field.get('hw_rst'), span]
+                                    newfield = [node.get('id'),
+                                                "0x"+multiaddroffset.upper(),
+                                                field_index(int(field.get('mask'), 16)),
+                                                field_size(int(field.get('mask'), 16)),
+                                                field.get('permission'),
+                                                field.get('id'),
+                                                field.get('description'),
+                                                field.get('mask'),
+                                                field.get('hw_rst'), span]
                             else:
                                 span = 0                        
                                 if field.get('absolute_id'):                 
-                                    newfield = [node.get('absolute_id'), "0x"+multiaddroffset.upper(), field_index(int("0xFFFFFFFF",16)), field_size(int("0xFFFFFFF",16)), field.get('permission'), field.get('id'), field.get('description'), "0xFFFFFFFF", field.get('hw_rst'), span]                      
+                                    newfield = [node.get('absolute_id'),
+                                                "0x" + multiaddroffset.upper(),
+                                                field_index(int("0xFFFFFFFF", 16)),
+                                                field_size(int("0xFFFFFFF", 16)),
+                                                field.get('permission'),
+                                                field.get('id'),
+                                                field.get('description'),
+                                                "0xFFFFFFFF",
+                                                field.get('hw_rst'), span]
                                 else:
-                                    newfield = [node.get('id'), "0x"+multiaddroffset.upper(), field_index(int("0xFFFFFFFF",16)), field_size(int("0xFFFFFFFF",16)), field.get('permission'), field.get('id'), field.get('description'), "0xFFFFFFFF", field.get('hw_rst'), span]                      
+                                    newfield = [node.get('id'),
+                                                "0x" + multiaddroffset.upper(),
+                                                field_index(int("0xFFFFFFFF", 16)),
+                                                field_size(int("0xFFFFFFFF", 16)),
+                                                field.get('permission'),
+                                                field.get('id'),
+                                                field.get('description'),
+                                                "0xFFFFFFFF",
+                                                field.get('hw_rst'), span]
 
                             alltableitems.append(newfield)
 
 
         # Reverse the order of the control bit fields so that it is LSB to MSB
         sorted_alltableitems = []
-        sorted_alltableitems = sorted(alltableitems, key=lambda x:(x[1],-x[2]))
+        sorted_alltableitems = sorted(alltableitems, key=lambda x:(x[1], -x[2]))
         # alltableitems.sort(key=lambda x: (x[0], x[2]))
 
         for line in sorted_alltableitems:
-            print '[INFO]: Sorted alltableitems: {}'.format(line)
+            logger.debug('Sorted alltableitems: {}'.format(line))
 
         absolutehtmltable= []
         absolutehtmltable = create_multifield_table_header()
@@ -415,7 +501,7 @@ class xml2html:
         target = open(self.output_file, 'w')
 
         for line in absolutehtmltable:
-            print '[DEBUG]: <absolutehtmltable>: {}'.format(line)
+            logger.debug('<absolutehtmltable>: {}'.format(line))
             target.write(line)
             target.write('\n')
 
@@ -444,8 +530,11 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
 
     if not os.path.isfile(options.input_file):
-        print "Input file " + options.input_file + " doesn't exist!"
+        logger.error("Input file " + options.input_file + " doesn't exist!")
         exit(-1)
 
+    logger.info('Generating HTML Tables for: {}'
+                .format(options.input_file))
     xml2html(options.input_file, options.output_file, options.cmd_string)
-
+    logger.info('Output HTML File: {}'
+                .format(options.output_file))

@@ -2,17 +2,17 @@
 # Copyright (C) 2015
 # University of Oxford <http://www.ox.ac.uk/>
 # Department of Physics
-# 
-# This program is free software: you can redistribute it and/or modify  
-# it under the terms of the GNU General Public License as published by  
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
 #
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranty of 
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 # General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License 
+# You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import re
@@ -32,6 +32,9 @@ import lxml.etree as ET
 from optparse import OptionParser
 from xml2htmltable import xml2html
 
+import xml2vhdl_logging
+logger = xml2vhdl_logging.config_logger(__name__)
+
 version = [1.7, "major refactoring",
            1.6, "merge node correction",
            1.5, "bram init file containing zip compressed xml",
@@ -43,7 +46,7 @@ version = [1.7, "major refactoring",
 
 
 # specific function
-def ignore_check_offset(node_x,node_y):
+def ignore_check_offset(node_x, node_y):
     ret = False
     if is_leaf(node_x) == True and node_y == node_x.getparent():
         ret = True
@@ -67,14 +70,18 @@ def check_offset(root):
             y_size = get_byte_size(y)  # int(y.get('byte_size'))
             if x != y and ignore_check_offset(x,y) == False:
                 if x_address >= y_address and x_address < y_address + y_size:
-                    print "Error: conflicting addresses:"
-                    print get_absolute_id(x), hex(x_address)
-                    print get_absolute_id(x), hex(y_address)
+                    logger.error("conflicting addresses:")
+                    logger.error("\t{}"
+                                 .format(get_absolute_id(x), hex(x_address)))
+                    logger.error("\t{}"
+                                 .format(get_absolute_id(x), hex(y_address)))
                     sys.exit(1)
                 if x_address + x_size - 1 >= y_address and x_address + x_size - 1 < y_address + y_size:
-                    print "Error: conflicting addresses:"
-                    print get_absolute_id(x), hex(x_address)
-                    print get_absolute_id(x), hex(y_address)
+                    logger.error("conflicting addresses:")
+                    logger.error("\t{}"
+                                 .format(get_absolute_id(x), hex(x_address)))
+                    logger.error("\t{}"
+                                 .format(get_absolute_id(x), hex(y_address)))
                     sys.exit(1)
 
 
@@ -89,10 +96,13 @@ def check_offset_requirement(root):
             # print this_size
             # print
             if this_addr & (this_size-1) != 0:
-                print "Error! It should be (absolute_offset & (size-1)) = 0"
-                print get_absolute_id(x) + " doesn't meet this requirement!"
-                print get_absolute_id(x) + " absolute offset is " + hex(this_addr)
-                print get_absolute_id(x) + " size is " + str(this_size) + " bytes"
+                logger.error("It should be (absolute_offset & (size-1)) = 0")
+                logger.error("\t{} doesn't meet this requirement!"
+                             .format(get_absolute_id(x)))
+                logger.error("\t{} absolute offset is: {}"
+                             .format(get_absolute_id(x), hex(this_addr)))
+                logger.error("\t{} size is: {} bytes"
+                             .format(get_absolute_id(x), this_size))
                 sys.exit(1)
 
 
@@ -109,7 +119,8 @@ def get_xml_file(link, path_list):
         if os.path.isfile(helper.string_io.normalize_path(link)):
             link_found = link
         else:
-            print "Error! Link \"" + link + "\" not found!"
+            logger.error('Link "{}" Not Found!'
+                         .format(link))
             sys.exit(1)
     return link_found
 
@@ -175,7 +186,8 @@ def get_byte_size(node):
             byte_size = int(x, 16)
         except:
             if node.get('byte_size') != None:
-                print "Unsupported byte size attribute at node " + "\"" + node.get('id') + "\""
+                logger.error('Unsupported byte size attribute at node "{}"'
+                             .format(node.get('id')))
                 sys.exit(1)
             else:
                 byte_size = None
@@ -258,7 +270,8 @@ def get_decoder_mask(address_list):
     addresses = address_list
 
     add_num = len(addresses)
-    print "Addresses are " + str(add_num)
+    logger.info('Addresses are: {}'
+                .format(add_num))
     baddr = np.zeros((add_num, 32), dtype=np.int)
     decode_dict = {}
     tree_dict = {}
@@ -308,11 +321,13 @@ class Xml2Ic:
 
         bus = helper.bus_definition.BusDefinition(int(options.bus_definition_number))
 
-        print
-        print "xml2ic.py version " + str(version[0])
+        logger.info('-' * 80)
+        logger.info('xml2ic.py version {}"'
+                    .format(version[0]))
 
         for n in options.path:
-            print n
+            logger.info('\t{}'
+                        .format(n))
 
         cmd_str = ""
         for k in sys.argv:
@@ -322,14 +337,15 @@ class Xml2Ic:
         # print cmd_str
 
         if options.log == True:
-            print
-            print "History Log:"
-            print
+            logger.info('-' * 80)
+            logger.info("History Log:")
+            logger.info('-' * 80)
             for n in range(len(version)/2):
-                print "version " + str(version[2*n])
+                logger.info("version {}"
+                            .format(version[2*n]))
                 dedented_text = textwrap.dedent(re.sub(r" +", ' ', version[2*n+1])).strip()
-                print textwrap.fill(dedented_text, width=80)
-                print
+                logger.info(textwrap.fill(dedented_text, width=80))
+                logger.info('-' * 80)
             sys.exit()
 
         input_file_list = []
@@ -340,13 +356,14 @@ class Xml2Ic:
             input_file_list.append(n)
 
         if args != []:
-            print "Unexpected argument: ", args[0]
-            print "-h for help"
+            logger.error("Unexpected argument: {}"
+                         .format(args[0]))
+            logger.error("-h for help")
             sys.exit(1)
 
         if input_file_list == []:
-            print "No input file!"
-            print "-h for help"
+            logger.error("No input file!")
+            logger.error("-h for help")
             sys.exit(1)
 
         for input_file_name in input_file_list:
@@ -387,8 +404,8 @@ class Xml2Ic:
                 bram_init_file = open(helper.string_io.normalize_path(xml_output_folder + bram_init_file_name), "w")
                 bram_init_file.write(bram_init)
                 bram_init_file.close()
-                print "Done!"
-                print
+                logger.info("Done!")
+                logger.info('-' * 80)
                 sys.exit()
 
             # resolve links
@@ -489,7 +506,8 @@ class Xml2Ic:
                     if node.get('byte_size') == None and node.get('size') != None:
                         node.set('byte_size', str(int(node.get('size')) * 4))
                     elif node.get('byte_size') == None:
-                        print "Error: Unknown byte size for node " + absolute_id
+                        logger.error("Unknown byte size for node {}"
+                                     .format(absolute_id))
                         sys.exit(1)
 
             check_offset(root)
@@ -502,28 +520,31 @@ class Xml2Ic:
             #
             vhdl_start_node = None
             if options.vhdl_top != "":
-                print "Searching for VHDL top level " + options.vhdl_top
+                logger.info("Searching for VHDL top level {}"
+                            .format(options.vhdl_top))
                 for node in root.iter('node'):
                     # print node.get('absolute_id')
                     if node.get('absolute_id') == options.vhdl_top:
                         vhdl_start_node = node
-                        print "VHDL top level found!"
+                        logger.info("VHDL top level found!")
                         break
                 if root.get('id') == options.vhdl_top:
                     vhdl_start_node = root
 
                 if vhdl_start_node == None:
 
-                    print "VHDL top level " + options.vhdl_top + " not found!"
+                    logger.warning("VHDL top level {} not found!"
+                                   .format(options.vhdl_top))
 
                     vhdl_start_node = root
                     options.vhdl_top = root.get('id')
 
-                    print "Using root node: " + options.vhdl_top
+                    logger.warning("\tUsing root node: {}"
+                                   .format(options.vhdl_top))
                     # print "Exiting..."
                     # sys.exit(1)
                 else:
-                    print "VHDL top level found!"
+                    logger.info("VHDL top level found!")
 
                 vhdl_id = []
                 vhdl_address = []
@@ -572,7 +593,8 @@ class Xml2Ic:
                 vhdl_str = re.sub("<SLAVE_MASK>", slave_mask, vhdl_str)
 
                 vhdl_file_name = vhdl_package_name + ".vhd"
-                print "Writing VHDL output file: \"" + helper.string_io.normalize_path(vhdl_output_folder + vhdl_file_name) + "\""
+                logger.info('Writing VHDL output file: "{}"'
+                            .format(helper.string_io.normalize_path(vhdl_output_folder + vhdl_file_name)))
                 helper.string_io.write_vhdl_file(vhdl_file_name, vhdl_output_folder, vhdl_str)
                 #
                 # IC PACKAGE
@@ -584,7 +606,8 @@ class Xml2Ic:
                 vhdl_str = vhdl_str.replace("<TOP_LEVEL>", options.vhdl_top)
 
                 vhdl_file_name = bus.name + "_" + options.vhdl_top + "_ic_pkg.vhd"
-                print "Writing VHDL output file: \"" + helper.string_io.normalize_path(vhdl_output_folder + vhdl_file_name) + "\""
+                logger.info('Writing VHDL output file: "{}"'
+                            .format(helper.string_io.normalize_path(vhdl_output_folder + vhdl_file_name)))
                 helper.string_io.write_vhdl_file(vhdl_file_name, vhdl_output_folder, vhdl_str)
                 #
                 # IC
@@ -600,7 +623,8 @@ class Xml2Ic:
                 vhdl_str = vhdl_str.replace("<TOP_LEVEL>", options.vhdl_top)
 
                 vhdl_file_name = bus.name + "_" + options.vhdl_top + "_ic.vhd"
-                print "Writing VHDL output file: \"" + helper.string_io.normalize_path(vhdl_output_folder + vhdl_file_name) + "\""
+                logger.info('Writing VHDL output file: "{}"'
+                            .format(helper.string_io.normalize_path(vhdl_output_folder + vhdl_file_name)))
                 helper.string_io.write_vhdl_file(vhdl_file_name, vhdl_output_folder, vhdl_str)
                 #
                 # EXAMPLE
@@ -633,7 +657,8 @@ class Xml2Ic:
                 #print vhdl_str
 
                 vhdl_file_name = bus.name + "_" + options.vhdl_top + "_example.vho"
-                print "Writing VHDL output file: \"" + helper.string_io.normalize_path(vhdl_output_folder + vhdl_file_name) + "\""
+                logger.info('Writing VHDL output file: "{}"'
+                            .format(helper.string_io.normalize_path(vhdl_output_folder + vhdl_file_name)))
                 helper.string_io.write_vhdl_file(vhdl_file_name, vhdl_output_folder, vhdl_str)
             #
             # XML generation
@@ -688,16 +713,20 @@ class Xml2Ic:
             xml_base_name = re.sub(r".*?\.", "", xml_base_name[::-1])[::-1]
             xml_base_name = xml_base_name + "_output.xml"
             xml_file_name = helper.string_io.normalize_path(xml_output_folder + xml_base_name)
-            print "Writing XML output file: \"" + helper.string_io.normalize_path(xml_output_folder + xml_file_name) + "\""
+            logger.info('Writing XML output file: "{}"'
+                        .format(helper.string_io.normalize_path(xml_output_folder + xml_file_name)))
             xml_file = open(xml_file_name, "w")
             xml_file.write(myxml)
             xml_file.close()
 
-            # html_dir_name = helper.string_io.normalize_output_folder(xml_output_folder + "/html")
-            # html_file_name = helper.string_io.normalize_path(html_dir_name + "/" + xml_base_name.replace("_output.xml", "_output.html"))
-            # xml2html(xml_file_name, html_file_name, cmd_str)
-            # shutil.copy('regtables.css', html_dir_name)
-
+            html_dir_name = helper.string_io.normalize_output_folder(xml_output_folder + "/html")
+            html_file_name = helper.string_io.normalize_path(html_dir_name + "/" + xml_base_name.replace("_output.xml", "_output.html"))
+            logger.info('Generating HTML Tables from: {}'
+                        .format(xml_file_name))
+            xml2html(xml_file_name, html_file_name, cmd_str)
+            shutil.copy('regtables.css', html_dir_name)
+            logger.info('Generated HTML File: {}'
+                        .format(html_file_name))
             xml_compressed = zlib.compress(myxml)
             xml_compressed = binascii.hexlify(xml_compressed)
             xml_compressed = helper.string_io.hex_format(len(xml_compressed)/2) + xml_compressed
@@ -713,8 +742,8 @@ class Xml2Ic:
             bram_init_file.write(bram_init)
             bram_init_file.close()
 
-            print "Done!"
-            print
+            logger.info("Done!")
+            logger.info('-' * 80)
 #
 #
 # MAIN STARTS HERE

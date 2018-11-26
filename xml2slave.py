@@ -2,17 +2,17 @@
 # Copyright (C) 2015
 # University of Oxford <http://www.ox.ac.uk/>
 # Department of Physics
-# 
-# This program is free software: you can redistribute it and/or modify  
-# it under the terms of the GNU General Public License as published by  
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
 #
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranty of 
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 # General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License 
+# You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 # TODO:
@@ -33,15 +33,20 @@ import helper.xml_utils
 import helper.line_options
 import helper.bus_definition
 from optparse import OptionParser
+import xml2vhdl_logging
+logger = xml2vhdl_logging.config_logger(__name__)
 
 class Xml2Slave:
     def __init__(self, options, args):
+        self.logger = xml2vhdl_logging.config_class_logger(self.__class__.__name__, __name__)
         bus = helper.bus_definition.BusDefinition(int(options.bus_definition_number))
-        print "Selected bus:"
-        print "    name: " + str(bus.name)
-        print "    width: " + str(bus.data_bit_size) + "bit"
-
-        print "xml2vhdl.py version " + helper.help.get_version()
+        self.logger.info("Selected bus:")
+        self.logger.info("\tname:  {}"
+                         .format(bus.name))
+        self.logger.info("\twidth: {} bit"
+                         .format(bus.data_bit_size))
+        self.logger.info("xml2vhdl.py version {}"
+                         .format(helper.help.get_version()))
 
         cmd_str = ""
         for k in sys.argv:
@@ -73,20 +78,22 @@ class Xml2Slave:
             input_file_list.append(n)
 
         if args != []:
-            print "Unexpected argument: ", args[0]
-            print "-h for help"
-            print "-a for supported XML attributes"
+            self.logger.error("Unexpected argument: {}"
+                             .format(args[0]))
+            self.logger.error("-h for help")
+            self.logger.error("-a for supported XML attributes")
             sys.exit(1)
 
         if input_file_list == []:
-            print "No input file!"
-            print "-h for help"
-            print "-a for supported XML attributes"
+            self.logger.error("No input file!")
+            self.logger.error("-h for help")
+            self.logger.error("-a for supported XML attributes")
             sys.exit(1)
 
         for input_file_name in input_file_list:
-            print "-----------------------------------------------------------------"
-            print "Analysing \"" + input_file_name + "\""
+            self.logger.info("-" * 80)
+            self.logger.info('Analysing: "{}"'
+                             .format(input_file_name))
 
             # XML processing
             xml_mm = helper.xml_utils.XmlMemoryMap(input_file_name, data_bus_size=bus.data_bit_size)
@@ -101,33 +108,35 @@ class Xml2Slave:
             # dictionary processing
             slave = helper.slave.Slave(data_bus_size=bus.data_bit_size, size_indicate_bytes=bus.size_indicate_bytes)
             slave.populate_dict(xml_mm.root)
-            print "Hierarchical levels are " + str(slave.get_hierarchical_level_number())
-            print "Nodes are " + str(slave.get_node_number())
-            print "Checking reserved words..."
+            self.logger.info("Hierarchical levels are {}"
+                             .format(slave.get_hierarchical_level_number()))
+            self.logger.info("Nodes are {}"
+                .format(slave.get_node_number()))
+            self.logger.info("Checking reserved words...")
             slave.check_reserved_words()
-            print "fill_child..."
+            self.logger.info("fill_child...")
             slave.fill_child()
-            print "fill_complete_id..."
+            self.logger.info("fill_complete_id...")
             slave.fill_complete_id()
-            print "fill_absolute_offset..."
+            self.logger.info("fill_absolute_offset...")
             slave.fill_absolute_offset()
-            print "fill_type..."
+            self.logger.info("fill_type...")
             slave.fill_type()
-            print "fill_addressable..."
+            self.logger.info("fill_addressable...")
             slave.fill_addressable()
-            print "check_offset..."
+            self.logger.info("check_offset...")
             slave.check_offset()
             slave.check_address_requirement()
-            print "check_bitfield..."
+            self.logger.info("check_bitfield...")
             slave.check_bitfield()
-            print "fill_decoder_mask..."
+            self.logger.info("fill_decoder_mask...")
             slave.fill_decoder_mask()
-            print "propagate_reset_value..."
+            self.logger.info("propagate_reset_value...")
             slave.propagate_reset_value()
-            print "default_reset..."
+            self.logger.info("default_reset...")
             slave.default_reset()
             reset_generics_dict = slave.get_reset_generics()
-            print "default_permission..."
+            self.logger.info("default_permission...")
             slave.default_permission()
             max_id_len = slave.get_max_id_len()
             if slave.get_nof_not_ignored_registers() == 0:
@@ -144,9 +153,9 @@ class Xml2Slave:
             # VHDL GENERATION
             #
             if nof_memory_block == 0 and nof_registers_block == 0:
-                print "No VHDL to generate, no valid nodes are present!"
-                print "Done!"
-                print
+                self.logger.warning("No VHDL to generate, no valid nodes are present!")
+                self.logger.warning("Done!")
+                self.logger.warning('-' * 80)
                 return # sys.exit(0)
             #
             # RECORDS and ARRAY
@@ -787,8 +796,8 @@ class Xml2Slave:
 
                 helper.string_io.write_vhdl_file("ipb" + "_" + xml_mm.root.get('id') + "_dp_ram.vhd", vhdl_output_folder, vhdl_text)
 
-        print "Done!"
-        print
+        self.logger.info("Done!")
+        self.logger.info('-' * 80)
 #
 #
 # MAIN STARTS HERE
