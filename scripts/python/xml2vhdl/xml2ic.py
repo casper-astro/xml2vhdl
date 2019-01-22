@@ -47,6 +47,16 @@ version = [1.7, "major refactoring",
 
 # specific function
 def ignore_check_offset(node_x, node_y):
+    """
+
+    Args:
+        node_x (???):
+        node_y (???):
+
+    Returns:
+         (???):
+
+    """
     ret = False
     if is_leaf(node_x) == True and node_y == node_x.getparent():
         ret = True
@@ -59,6 +69,15 @@ def ignore_check_offset(node_x, node_y):
 
 # different function
 def check_offset(root):
+    """
+
+    Args:
+        root (???):
+
+    Returns:
+        None
+
+    """
     # for node in root.findall('node'):
     for x in root.findall('node'):
         # print x.get('id')
@@ -87,6 +106,15 @@ def check_offset(root):
 
 #different function   
 def check_offset_requirement(root):
+    """
+
+    Args:
+        root (???):
+
+    Returns:
+        None
+
+    """
     for x in root.findall('node'):
         if x.get('absolute_offset') != None:
             this_addr = int(x.get('absolute_offset'), 16)
@@ -108,6 +136,16 @@ def check_offset_requirement(root):
 
 # specific function
 def get_xml_file(link, path_list):
+    """
+
+    Args:
+        link (???):
+        path_list (list of str):
+
+    Returns:
+         (???):
+
+    """
     link_found = ""
     for path in path_list:
         if path != "":
@@ -127,6 +165,15 @@ def get_xml_file(link, path_list):
 
 # specific function
 def get_absolute_offset(node):
+    """
+
+    Args:
+        node (obj):
+
+    Returns:
+        None
+
+    """
     if node.get('address') != None:
         offset = int(node.get('address'), 16)
     else:
@@ -145,12 +192,22 @@ def get_absolute_offset(node):
 
 # specific function
 def get_absolute_id(node, excluded_levels=[]):
+    """
+
+    Args:
+        node (obj):
+        excluded_levels (list of ???):
+
+    Returns:
+        (???):
+
+    """
     id = node.get('id')
     current_node = node
     level = 0
     while True:
         parent_node = current_node.getparent()
-        if parent_node == None:
+        if parent_node is None:
             break
         else:
             if parent_node.get('id') != None and level not in excluded_levels:
@@ -162,6 +219,14 @@ def get_absolute_id(node, excluded_levels=[]):
 
 # specific function
 def depth(node):
+    """
+    Args:
+        node (obj):
+
+    Returns:
+         (int):
+
+    """
     d = 0
     while node is not None:
         d += 1
@@ -171,6 +236,15 @@ def depth(node):
 
 # specific function
 def is_leaf(node):
+    """
+
+    Args:
+        node (obj):
+
+    Returns:
+        (bool):
+
+    """
     if node.findall("node") == []:
         ret = True
     else:
@@ -178,6 +252,15 @@ def is_leaf(node):
     return ret
       
 def get_byte_size(node):
+    """
+
+    Args:
+        node (obj):
+
+    Returns:
+        (int):
+
+    """
     x = node.get('byte_size')
     try:
         byte_size = int(x)
@@ -186,16 +269,24 @@ def get_byte_size(node):
             byte_size = int(x, 16)
         except:
             if node.get('byte_size') != None:
-                logger.error('Unsupported byte size attribute at node "{}"'
-                             .format(node.get('id')))
+                logger.error('Unsupported byte size attribute at node "{node_id}"'
+                             .format(node_id=node.get('id')))
                 sys.exit(1)
             else:
                 byte_size = None
     return byte_size
-      
-   
-# return the node total size
+
+
 def get_node_size(node):
+    """Return the node total size
+
+    Args:
+        node (obj):
+
+    Returns:
+         (int):
+
+    """
     add_max = 0
     for x in node.findall('node'):
         add = int(x.get('address'), 16)
@@ -214,29 +305,63 @@ def get_node_size(node):
     return 2**n
 
 
-# return position of not-equal bit among addresses in add_list, returns -1 if there are not different bits
 def dec_check_bit(add_list, bit):
+    """
+
+    Args:
+        add_list (list of ???):
+        bit (???):
+
+    Returns:
+        (int): position of not-equal bit among addresses in add_list, returns ``-1``
+        if there are not different bits
+
+    """
     for b in reversed(range(0, bit)):
         for add0 in add_list:
             for add1 in add_list:
                 if add0[b] != add1[b]:
                     return b
     return -1
-   
+
+
 def dec_get_last_bit(bit_path):
+    """
+
+    Args:
+        bit_path (str):
+
+    Returns:
+        (int):
+
+    """
     bit_list = bit_path.split("_")
     ret = bit_list[len(bit_list)-1]
     ret = re.sub(r'v.*', "", ret)
     ret = int(ret)
-    #print "get_last_bit input: " + str(ret)
-    #print "get_last_bit output: " + bit_path
+
+    logger.debug('get_last_bit input:  {input}'.format(input=ret))
+    logger.debug('get_last_bit output: {output}'.format(output=bit_path))
+
     if ret == -1:
         ret = 32
     return ret
-  
+
+
 def dec_route_add(tree_dict):
+    """
+
+    Args:
+        tree_dict (dict):
+
+    Returns:
+        tuple: tuple containing:
+                * int: 1 to indicate ``done`` complete.
+                * dict:
+
+    """
     done = 0
-    #print tree_dict
+    logger.debug('tree_dict: {tree_dict}'.format(tree_dict=tree_dict))
     for path in tree_dict.keys():
         add_list = tree_dict[path]
         b = dec_check_bit(add_list,dec_get_last_bit(path))
@@ -249,21 +374,32 @@ def dec_route_add(tree_dict):
                     list_0.append(add)
                 else:
                     list_1.append(add)
-            # print path + " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-            # print len(add_list)
-            # print len(list_0)
-            # print len(list_1)
-            # print len(list_0) + len(list_1)
+            logger.debug('{path} XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'.format(path=path))
+            logger.debug('{add_list_len}'.format(add_list_len=len(add_list)))
+            logger.debug('{list_0_len}'.format(list_0_len=len(list_0)))
+            logger.debug('{list_1_len}'.format(list_1_len=len(list_1)))
+            logger.debug('{list_01_len}'.format(list_01_len=len(list_0) + len(list_1)))
             bit_dict["0"] = list_0
             bit_dict["1"] = list_1
             tree_dict[path + "_" + str(b) + "v0"] = list_0
             tree_dict[path + "_" + str(b) + "v1"] = list_1
             tree_dict[path] = []
             done = 1
-    # print tree_dict
+
+    logger.debug('tree_dict: {tree_dict}'.format(tree_dict=tree_dict))
     return done, tree_dict
 
+
 def get_decoder_mask(address_list):
+    """
+
+    Args:
+        address_list (list of int):
+
+    Returns:
+        (dict):
+
+    """
     # addresses = []
     # for x in get_object(["block","register_with_bitfield","register_without_bitfield"]):
         # addresses.append(global_dict[str(x)]['addressable'])
@@ -285,7 +421,8 @@ def get_decoder_mask(address_list):
                 baddr[a, 31-n] = 1
             bit_mask = bit_mask >> 1
         a = a + 1
-    # print baddr
+
+    logger.debug('baddr: {baddr}'.format(baddr=baddr))
    
     tree_dict["-1v0"] = baddr
    
@@ -308,26 +445,32 @@ def get_decoder_mask(address_list):
                     mask = mask | (1 << x)
             decode_dict[str(int(add, 2))] = mask
 
-    # for address in sorted(decode_dict.keys()):
-    #    print "add:"
-    #    print address
-    #    print "mask:"
-    #    print hex(decode_dict[address])
+    logger.debug('Decode Dict:')
+    for address in sorted(decode_dict.keys()):
+        logger.debug('\taddr:')
+        logger.debug('\t{address}'.format(address=address))
+        logger.debug('\tmask:')
+        logger.debug('\t{mask}'.format(mask=hex(decode_dict[address])))
+
     return decode_dict
 
 
 class Xml2Ic:
-    def __init__(self, options, args):
+    """
 
+    """
+    def __init__(self, options, args):
+        self.logger = xml2vhdl_logging.config_logger(name=__name__, class_name=self.__class__.__name__)
         bus = helper.bus_definition.BusDefinition(int(options.bus_definition_number))
 
-        logger.info('-' * 80)
-        logger.info('xml2ic.py version {}"'
-                    .format(version[0]))
+        self.logger.info('-' * 80)
+        self.logger.info('xml2ic.py version {}"'
+                         .format(version[0]))
 
+        self.logger.info('Processing Paths:')
         for n in options.path:
-            logger.info('\t{}'
-                        .format(n))
+            logger.info('\t{path}'
+                        .format(path=os.path.abspath(n)))
 
         cmd_str = ""
         for k in sys.argv:
@@ -336,16 +479,16 @@ class Xml2Ic:
             cmd_str += k + " "
         # print cmd_str
 
-        if options.log == True:
-            logger.info('-' * 80)
-            logger.info("History Log:")
-            logger.info('-' * 80)
+        if options.log is True:
+            self.logger.info('-' * 80)
+            self.logger.info("History Log:")
+            self.logger.info('-' * 80)
             for n in range(len(version)/2):
-                logger.info("version {}"
-                            .format(version[2*n]))
+                self.logger.info("version {}"
+                                 .format(version[2*n]))
                 dedented_text = textwrap.dedent(re.sub(r" +", ' ', version[2*n+1])).strip()
-                logger.info(textwrap.fill(dedented_text, width=80))
-                logger.info('-' * 80)
+                self.logger.info(textwrap.fill(dedented_text, width=80))
+                self.logger.info('-' * 80)
             sys.exit()
 
         input_file_list = []
@@ -356,14 +499,14 @@ class Xml2Ic:
             input_file_list.append(n)
 
         if args != []:
-            logger.error("Unexpected argument: {}"
-                         .format(args[0]))
-            logger.error("-h for help")
+            self.logger.error("Unexpected argument: {}"
+                              .format(args[0]))
+            self.logger.error("-h for help")
             sys.exit(1)
 
         if input_file_list == []:
-            logger.error("No input file!")
-            logger.error("-h for help")
+            self.logger.error("No input file!")
+            self.logger.error("-h for help")
             sys.exit(1)
 
         for input_file_name in input_file_list:
@@ -405,8 +548,8 @@ class Xml2Ic:
                                                                                    bram_init_file_name)), "w")
                 bram_init_file.write(bram_init)
                 bram_init_file.close()
-                logger.info("Done!")
-                logger.info('-' * 80)
+                self.logger.info("Done!")
+                self.logger.info('-' * 80)
                 sys.exit()
 
             # resolve links
@@ -505,8 +648,9 @@ class Xml2Ic:
                     if node.get('byte_size') == None and node.get('size') != None:
                         node.set('byte_size', str(int(node.get('size')) * 4))
                     elif node.get('byte_size') == None:
-                        logger.error("Unknown byte size for node {}"
-                                     .format(absolute_id))
+                        self.logger.error("Unknown byte size for node: {node}"
+                                          .format(node=absolute_id))
+                        self.error('Exiting...')
                         sys.exit(1)
 
             check_offset(root)
@@ -519,31 +663,30 @@ class Xml2Ic:
             #
             vhdl_start_node = None
             if options.vhdl_top != "":
-                logger.info("Searching for VHDL top level {}"
-                            .format(options.vhdl_top))
+                self.logger.info('Searching for VHDL Top-Level: {top_level}'
+                                 .format(top_level=options.vhdl_top))
                 for node in root.iter('node'):
-                    # print node.get('absolute_id')
+                    self.logger.debug('node: {node}'.format(node=node.get('absolute_id')))
                     if node.get('absolute_id') == options.vhdl_top:
                         vhdl_start_node = node
-                        logger.info("VHDL top level found!")
+                        self.logger.info("VHDL Top-Level found!")
                         break
                 if root.get('id') == options.vhdl_top:
                     vhdl_start_node = root
 
-                if vhdl_start_node == None:
-
-                    logger.warning("VHDL top level {} not found!"
-                                   .format(options.vhdl_top))
+                if vhdl_start_node is None:
+                    self.logger.warning('VHDL Top-Level not found: {top_level}'
+                                        .format(top_level=options.vhdl_top))
 
                     vhdl_start_node = root
                     options.vhdl_top = root.get('id')
 
-                    logger.warning("\tUsing root node: {}"
-                                   .format(options.vhdl_top))
-                    # print "Exiting..."
+                    self.logger.warning("\tUsing root node: {node}"
+                                        .format(node=options.vhdl_top))
+                    # self.logger.error('Exiting...')
                     # sys.exit(1)
                 else:
-                    logger.info("VHDL top level found!")
+                    self.logger.info("VHDL top level found!")
 
                 vhdl_id = []
                 vhdl_address = []
@@ -705,8 +848,8 @@ class Xml2Ic:
             xml_base_name = xml_base_name + "_output.xml"
             xml_file_name = os.path.abspath(helper.string_io.normalize_path(os.path.join(xml_output_folder,
                                                                                          xml_base_name)))
-            logger.info('Writing XML output file: {xml_output_file}'
-                        .format(xml_output_file=xml_file_name))
+            self.logger.info('Writing XML output file: {xml_output_file}'
+                             .format(xml_output_file=xml_file_name))
             xml_file = open(xml_file_name, "w")
             xml_file.write(myxml)
             xml_file.close()
@@ -714,12 +857,12 @@ class Xml2Ic:
             html_dir_name = helper.string_io.normalize_output_folder(xml_output_folder + "/html")
             html_file_name = helper.string_io.normalize_path(os.path.join(html_dir_name,
                                                                           xml_base_name.replace("_output.xml", "_output.html")))
-            logger.info('Generating HTML Tables from: {}'
-                        .format(xml_file_name))
+            self.logger.info('Generating HTML Tables from: {}'
+                             .format(xml_file_name))
             xml2html(xml_file_name, html_file_name, cmd_str)
             shutil.copy('regtables.css', html_dir_name)
-            logger.info('Generated HTML File: {}'
-                        .format(html_file_name))
+            self.logger.info('Generated HTML File: {}'
+                             .format(html_file_name))
             xml_compressed = zlib.compress(myxml)
             xml_compressed = binascii.hexlify(xml_compressed)
             xml_compressed = helper.string_io.hex_format(len(xml_compressed)/2) + xml_compressed
@@ -736,8 +879,8 @@ class Xml2Ic:
             bram_init_file.write(bram_init)
             bram_init_file.close()
 
-            logger.info("Done!")
-            logger.info('-' * 80)
+            self.logger.info("Done!")
+            self.logger.info('-' * 80)
 #
 #
 # MAIN STARTS HERE
