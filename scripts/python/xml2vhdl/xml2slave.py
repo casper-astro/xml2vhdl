@@ -30,9 +30,7 @@ import helper.slave
 import helper.xml_gen
 import helper.string_io
 import helper.xml_utils
-import helper.line_options
 import helper.bus_definition
-from optparse import OptionParser
 
 import helper.customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
@@ -70,7 +68,8 @@ class Xml2Slave:
         vhdl_output_folder = helper.string_io.normalize_output_folder(options.vhdl_output)
         xml_output_folder = helper.string_io.normalize_output_folder(options.xml_output)
         if options.tb:
-            sim_output_folder = helper.string_io.normalize_output_folder(vhdl_output_folder + "sim")
+            sim_output_folder = helper.string_io.normalize_output_folder(os.path.join(vhdl_output_folder,
+                                                                                      "sim"))
 
         input_file_list = []
         input_folder_list = options.input_folder
@@ -108,7 +107,8 @@ class Xml2Slave:
             xml_mm.split_wide_registers()
 
             # dictionary processing
-            slave = helper.slave.Slave(data_bus_size=bus.data_bit_size, size_indicate_bytes=bus.size_indicate_bytes)
+            slave = helper.slave.Slave(data_bus_size=bus.data_bit_size,
+                                       size_indicate_bytes=bus.size_indicate_bytes)
             slave.populate_dict(xml_mm.root)
             self.logger.info("Hierarchical levels are {}"
                              .format(slave.get_hierarchical_level_number()))
@@ -150,7 +150,10 @@ class Xml2Slave:
             #
             # XML GENERATION
             #
-            helper.xml_gen.xml_build_output(slave, xml_output_folder, cmd_str, os.path.basename(input_file_name).replace(".xml", "_output.xml"))
+            helper.xml_gen.xml_build_output(slave,
+                                            xml_output_folder,
+                                            cmd_str,
+                                            os.path.basename(input_file_name).replace(".xml", "_output.xml"))
             #
             # VHDL GENERATION
             #

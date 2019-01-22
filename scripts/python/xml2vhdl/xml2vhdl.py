@@ -26,7 +26,7 @@ import helper.slave
 import helper.xml_gen
 import helper.string_io
 import helper.xml_utils
-import helper.line_options
+import helper.arguments as arguments
 import helper.bus_definition
 import xml.etree.ElementTree as ET
 from xml2slave import Xml2Slave
@@ -36,34 +36,34 @@ import helper.customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
 
 
-def xml2vhdl_exec(options, args, xml_file_name, type):
+def xml2vhdl_exec(options, cli_args, xml_file_name, gen_type):
     xml_file_path = helper.string_io.normalize_path(os.path.dirname(os.path.abspath(xml_file_name)))
-    options.input_folder = []
+    options.input_folder = list()
     options.input_file = [helper.string_io.normalize_path(os.path.abspath(xml_file_name))]
     if options.relative_output_path != "":
-        options.vhdl_output = xml_file_path + "/" + options.relative_output_path
-        options.xml_output = xml_file_path + "/" + options.relative_output_path
+        options.vhdl_output = os.path.join(xml_file_path, options.relative_output_path)
+        options.xml_output = os.path.join(xml_file_path, options.relative_output_path)
     if options.xml_output not in options.path:
         options.path.append(options.xml_output)
-    if type == "ic" or type == "transparent_ic":
+    if gen_type == "ic" or gen_type == "transparent_ic":
         options.vhdl_top = options.input_file[0].split(".")[0]
-        xml2ic = Xml2Ic(options, args)
+        xml2ic = Xml2Ic(options, cli_args)
         del xml2ic
     else:
-        xml2slave = Xml2Slave(options, args)
+        xml2slave = Xml2Slave(options, cli_args)
         del xml2slave
     return options.path
 
 
 if __name__ == '__main__':
-    parser = helper.line_options.set_parser()
-    (line_options, line_args) = parser.parse_args()
+    args = arguments.Arguments()
 
     xml_list = []
-    input_folder_list = line_options.input_folder
+    input_folder_list = args.input_folder
+
     if input_folder_list != []:
         xml_list = helper.string_io.file_list_generate(input_folder_list, '.xml')
-    for n in line_options.input_file:
+    for n in args.input_file:
         xml_list.append(n)
 
     # building dependency tree
@@ -71,17 +71,21 @@ if __name__ == '__main__':
     for xml in xml_list:
         tree = ET.parse(xml)
         root = tree.getroot()
-        depend = {"file": xml, "id": root.get('id'), "depend_on": [], "output": os.path.basename(xml).replace(".xml", "_output.xml")}
+        depend = {"file": xml,
+                  "id": root.get('id'),
+                  "depend_on": [],
+                  "output": os.path.basename(xml).replace(".xml", "_output.xml")}
         for node in root.iter():
             link = node.get('link')
             hw_type = node.get('hw_type')
-            if link != None and hw_type != "netlist":  # do not need to compile netlists, however the XML must be in the path
+            if link != None and hw_type != "netlist":
+                # do not need to compile netlists, however the XML must be in the path
                 if link not in depend['depend_on']:
                     depend['depend_on'].append(link)
         depend_tree.append(depend)
 
     # retrieving XML files from dependency tree bottom to up to create compile order
-    compile_order = []
+    compile_order = list()
     while True:
         stop = 1
         for xml in depend_tree:
@@ -104,7 +108,7 @@ if __name__ == '__main__':
         logger.warning("Unresolved dependencies found: ")
         for n in depend_tree:
             logger.warning('\t{}'
-                        .format(n))
+                           .format(n))
         raw_input("Press a key to continue...")
 
     logger.info('-' * 80)
@@ -113,8 +117,8 @@ if __name__ == '__main__':
         logger.info('\t{}'
                     .format(n['id']))
 
-    external_list = []
-    xml_path_list = []
+    external_list = list()
+    xml_path_list = list()
     for xml in compile_order:
         logger.info("Analysing: {}"
                     .format(xml['file']))
@@ -123,5 +127,5 @@ if __name__ == '__main__':
         if root.get('hw_type') == "external":
             external_list.append(xml['file'])
         else:
-            line_options.path = xml2vhdl_exec(line_options, line_args, xml['file'], root.get('hw_type'))
+            args.path = xml2vhdl_exec(args, list(), xml['file'], root.get('hw_type'))
     logger.info(external_list)

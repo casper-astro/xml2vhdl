@@ -19,6 +19,7 @@ import re
 import textwrap
 
 version = [
+           1.16, "Replaced optparse with argparse",
            1.15, "Added parameter for bus prefix",
            1.14, "Added Wishbone code generation",
            1.13, "Major code rewrite",

@@ -26,16 +26,16 @@ import textwrap
 import numpy as np
 import xml.dom.minidom
 import helper.string_io
-import helper.line_options
+import helper.arguments as arguments
 import helper.bus_definition
 import lxml.etree as ET
-from optparse import OptionParser
 from xml2htmltable import xml2html
 
 import helper.customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
 
-version = [1.7, "major refactoring",
+version = [1.8, "Replaced optparse with argparse",
+           1.7, "major refactoring",
            1.6, "merge node correction",
            1.5, "bram init file containing zip compressed xml",
            1.4, "converted sys.exit() to sys.exit(1)",
@@ -889,7 +889,6 @@ class Xml2Ic:
 #
 #
 if __name__ == '__main__':
-    parser = helper.line_options.set_parser()
-    (line_options, line_args) = parser.parse_args()
-    xml2ic_inst = Xml2Ic(line_options, line_args)
+    args = arguments.Arguments()
+    xml2ic_inst = Xml2Ic(args, list())
     del xml2ic_inst
