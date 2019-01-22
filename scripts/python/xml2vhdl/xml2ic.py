@@ -58,11 +58,11 @@ def ignore_check_offset(node_x, node_y):
 
     """
     ret = False
-    if is_leaf(node_x) == True and node_y == node_x.getparent():
+    if is_leaf(node_x) and node_y == node_x.getparent():
         ret = True
-    elif is_leaf(node_y) == True and node_x == node_y.getparent():
+    elif is_leaf(node_y) and node_x == node_y.getparent():
         ret = True
-    elif is_leaf(node_x) == True and is_leaf(node_y) == True and node_x.getparent() == node_y.getparent():
+    elif is_leaf(node_x) and is_leaf(node_y) and node_x.getparent() == node_y.getparent():
         ret = True
     return ret
 
@@ -104,7 +104,7 @@ def check_offset(root):
                     sys.exit(1)
 
 
-#different function   
+# different function
 def check_offset_requirement(root):
     """
 
@@ -881,6 +881,8 @@ class Xml2Ic:
 
             self.logger.info("Done!")
             self.logger.info('-' * 80)
+
+
 #
 #
 # MAIN STARTS HERE
