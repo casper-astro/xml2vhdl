@@ -22,7 +22,10 @@ import help
 import string_io
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
-from xml2htmltable import xml2html
+# from xml2htmltable import xml2html
+
+import customlogging as xml2vhdl_logging
+logger = xml2vhdl_logging.config_logger(__name__)
 
 
 # add a child to parent node
@@ -75,16 +78,18 @@ def xml_build_output(slave, xml_output_folder, cmd_str, xml_out_file_name=""):
         xml_base_name = slave.dict["0"]['this_id'] + "_output.xml"
     else:
         xml_base_name = xml_out_file_name
-    xml_file_name = string_io.normalize_path(xml_output_folder + xml_base_name)
-    print xml_output_folder
-    print xml_file_name
+    xml_file_name = string_io.normalize_path(os.path.abspath(os.path.join(xml_output_folder, xml_base_name)))
+    logger.info('Processing: {xml_file_name}'
+                .format(xml_file_name=xml_file_name))
+
     xml_file = open(xml_file_name, "w")
     xml_text = myxml.toprettyxml()
     xml_text += "<!-- This file has been automatically generated using xml2vhdl.py version " + help.get_version() + " /!-->\n"
     xml_file.write(xml_text)
     xml_file.close()
 
-    html_dir_name = string_io.normalize_output_folder(xml_output_folder + "/html")
-    html_file_name = string_io.normalize_path(html_dir_name + "/" + xml_base_name.replace("_output.xml", "_output.html"))
+    # html_dir_name = string_io.normalize_output_folder(os.path.join(xml_output_folder, "html"))
+    # html_file_name = string_io.normalize_path(os.path.join(html_dir_name,
+    #                                                        xml_base_name.replace("_output.xml", "_output.html")))
     # xml2html(xml_file_name, html_file_name, cmd_str)
     # shutil.copy(os.path.join(os.path.dirname(__file__),'../regtables.css'), html_dir_name)
