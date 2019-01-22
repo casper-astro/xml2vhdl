@@ -19,6 +19,10 @@ import re
 import os
 import sys
 
+import customlogging as xml2vhdl_logging
+logger = xml2vhdl_logging.config_logger(__name__)
+
+
 # getchar from user input
 class _Getch:
     """Gets a single character from standard input.  Does not echo to the screen."""
@@ -82,14 +86,15 @@ def normalize_output_folder(folder, ask="no"):
             if ask == "no":
                 os.makedirs(output_folder)
             else:
-                print "Folder \"" + output_folder + \
-                      "\" doesn't exist! Press [Y | y] to create it, any other key to abort"
+                logger.warning('{output_folder} does not exist! Press [Y | y] to create it, any other key to abort'
+                               .format(output_folder=os.path.abspath(output_folder)))
                 key = _Getch()
                 if key().lower() == "y":
-                    print "Creating \"" + output_folder + "\" folder"
+                    logger.info('Creating: {output_folder}'
+                                .format(output_folder=os.path.abspath(output_folder)))
                     os.makedirs(output_folder)
                 else:
-                    print "Exiting..."
+                    logger.error('Exiting...')
                     sys.exit(1)
         output_folder += "/"
     return output_folder
@@ -117,7 +122,8 @@ def read_template_file(file_name):
 # write VHDL output file
 def write_vhdl_file(file_name, vhdl_output_folder, text):
     file_name = normalize_path(vhdl_output_folder + file_name)
-    print "Writing VHDL output file: \"" + file_name + "\""
+    logger.info('Writing VHDL output file: {file_name}'
+                .format(file_name=os.path.abspath(file_name)))
     vhdl_file = open(file_name, "w")
     vhdl_file.write(text)
     vhdl_file.close()
