@@ -1,0 +1,38 @@
+version: 1
+disable_existing_loggers: False
+formatters:
+  fileFormatter:
+    format: "[%(asctime)s][%(filename)s:%(lineno)d][%(funcName)s][%(levelname)s][%(threadName)s]: %(message)s"
+  consoleFormatter:
+    '()': colorlog.ColoredFormatter
+    format: "%(log_color)s[%(levelname)-8s]: %(message)s"
+handlers:
+    consoleHandler:
+        class: logging.StreamHandler
+        level: INFO
+        formatter: consoleFormatter
+        stream: ext://sys.stdout
+
+    fileHandler:
+        class: logging.handlers.RotatingFileHandler
+        level: DEBUG
+        formatter: fileFormatter
+        filename: log.log
+        maxBytes: 104857600
+        backupCount: 2
+        encoding: utf8
+
+loggers:
+    my_module:
+        level: INFO
+        handlers:
+          - consoleHandler
+          - fileHandler
+        propagate: no
+
+root:
+    level: DEBUG
+    handlers:
+      - consoleHandler
+      - fileHandler
+

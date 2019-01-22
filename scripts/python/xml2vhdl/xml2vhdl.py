@@ -32,8 +32,9 @@ import xml.etree.ElementTree as ET
 from xml2slave import Xml2Slave
 from xml2ic import Xml2Ic
 
-import xml2vhdl_logging
+import helper.customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
+
 
 def xml2vhdl_exec(options, args, xml_file_name, type):
     xml_file_path = helper.string_io.normalize_path(os.path.dirname(os.path.abspath(xml_file_name)))
@@ -52,6 +53,7 @@ def xml2vhdl_exec(options, args, xml_file_name, type):
         xml2slave = Xml2Slave(options, args)
         del xml2slave
     return options.path
+
 
 if __name__ == '__main__':
     parser = helper.line_options.set_parser()

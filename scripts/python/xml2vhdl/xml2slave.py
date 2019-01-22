@@ -33,12 +33,14 @@ import helper.xml_utils
 import helper.line_options
 import helper.bus_definition
 from optparse import OptionParser
-import xml2vhdl_logging
+
+import helper.customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
+
 
 class Xml2Slave:
     def __init__(self, options, args):
-        self.logger = xml2vhdl_logging.config_class_logger(self.__class__.__name__, __name__)
+        self.logger = xml2vhdl_logging.config_logger(name=__name__, class_name=self.__class__.__name__)
         bus = helper.bus_definition.BusDefinition(int(options.bus_definition_number))
         self.logger.info("Selected bus:")
         self.logger.info("\tname:  {}"

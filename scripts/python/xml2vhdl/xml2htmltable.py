@@ -19,12 +19,12 @@ import xml.etree.ElementTree as ET
 from optparse import OptionParser
 import os
 
-import xml2vhdl_logging
+import helper.customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
 
 
 def hex_format(input):
-   return format(input, '08x')
+    return format(input, '08x')
 
 
 def field_index(input):

@@ -32,7 +32,7 @@ import lxml.etree as ET
 from optparse import OptionParser
 from xml2htmltable import xml2html
 
-import xml2vhdl_logging
+import helper.customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
 
 version = [1.7, "major refactoring",
@@ -373,7 +373,7 @@ class Xml2Ic:
                 output_file_name = input_file_name
             else:
                 output_file_name = helper.string_io.normalize_path(input_file_name).split("/")[-1]
-            xml_output_folder = helper.string_io.normalize_output_folder(options.xml_output)
+            xml_output_folder = os.path.abspath(helper.string_io.normalize_output_folder(options.xml_output))
 
             tree = ET.parse(input_file_name)
             root = tree.getroot()
@@ -401,7 +401,8 @@ class Xml2Ic:
                     bram_init += word + "\n"
                 bram_init_file_name = re.sub(r".*?\.", "", xml_file_name[::-1])[::-1]
                 bram_init_file_name = bram_init_file_name + ".hex"
-                bram_init_file = open(helper.string_io.normalize_path(xml_output_folder + bram_init_file_name), "w")
+                bram_init_file = open(helper.string_io.normalize_path(os.path.join(xml_output_folder,
+                                                                                   bram_init_file_name)), "w")
                 bram_init_file.write(bram_init)
                 bram_init_file.close()
                 logger.info("Done!")
@@ -437,8 +438,6 @@ class Xml2Ic:
                         todo = 1
                 if todo == 0:
                     break
-
-
 
             # while True:
             #     todo = 0
@@ -593,8 +592,6 @@ class Xml2Ic:
                 vhdl_str = re.sub("<SLAVE_MASK>", slave_mask, vhdl_str)
 
                 vhdl_file_name = vhdl_package_name + ".vhd"
-                logger.info('Writing VHDL output file: "{}"'
-                            .format(helper.string_io.normalize_path(vhdl_output_folder + vhdl_file_name)))
                 helper.string_io.write_vhdl_file(vhdl_file_name, vhdl_output_folder, vhdl_str)
                 #
                 # IC PACKAGE
@@ -606,8 +603,6 @@ class Xml2Ic:
                 vhdl_str = vhdl_str.replace("<TOP_LEVEL>", options.vhdl_top)
 
                 vhdl_file_name = bus.name + "_" + options.vhdl_top + "_ic_pkg.vhd"
-                logger.info('Writing VHDL output file: "{}"'
-                            .format(helper.string_io.normalize_path(vhdl_output_folder + vhdl_file_name)))
                 helper.string_io.write_vhdl_file(vhdl_file_name, vhdl_output_folder, vhdl_str)
                 #
                 # IC
@@ -623,8 +618,6 @@ class Xml2Ic:
                 vhdl_str = vhdl_str.replace("<TOP_LEVEL>", options.vhdl_top)
 
                 vhdl_file_name = bus.name + "_" + options.vhdl_top + "_ic.vhd"
-                logger.info('Writing VHDL output file: "{}"'
-                            .format(helper.string_io.normalize_path(vhdl_output_folder + vhdl_file_name)))
                 helper.string_io.write_vhdl_file(vhdl_file_name, vhdl_output_folder, vhdl_str)
                 #
                 # EXAMPLE
@@ -657,8 +650,6 @@ class Xml2Ic:
                 #print vhdl_str
 
                 vhdl_file_name = bus.name + "_" + options.vhdl_top + "_example.vho"
-                logger.info('Writing VHDL output file: "{}"'
-                            .format(helper.string_io.normalize_path(vhdl_output_folder + vhdl_file_name)))
                 helper.string_io.write_vhdl_file(vhdl_file_name, vhdl_output_folder, vhdl_str)
             #
             # XML generation
@@ -712,15 +703,17 @@ class Xml2Ic:
             xml_base_name = output_file_name
             xml_base_name = re.sub(r".*?\.", "", xml_base_name[::-1])[::-1]
             xml_base_name = xml_base_name + "_output.xml"
-            xml_file_name = helper.string_io.normalize_path(xml_output_folder + xml_base_name)
-            logger.info('Writing XML output file: "{}"'
-                        .format(helper.string_io.normalize_path(xml_output_folder + xml_file_name)))
+            xml_file_name = os.path.abspath(helper.string_io.normalize_path(os.path.join(xml_output_folder,
+                                                                                         xml_base_name)))
+            logger.info('Writing XML output file: {xml_output_file}'
+                        .format(xml_output_file=xml_file_name))
             xml_file = open(xml_file_name, "w")
             xml_file.write(myxml)
             xml_file.close()
 
             html_dir_name = helper.string_io.normalize_output_folder(xml_output_folder + "/html")
-            html_file_name = helper.string_io.normalize_path(html_dir_name + "/" + xml_base_name.replace("_output.xml", "_output.html"))
+            html_file_name = helper.string_io.normalize_path(os.path.join(html_dir_name,
+                                                                          xml_base_name.replace("_output.xml", "_output.html")))
             logger.info('Generating HTML Tables from: {}'
                         .format(xml_file_name))
             xml2html(xml_file_name, html_file_name, cmd_str)
@@ -738,7 +731,8 @@ class Xml2Ic:
                 bram_init += word + "\n"
             bram_init_file_name = re.sub(r".*?\.", "", xml_base_name[::-1])[::-1]
             bram_init_file_name = bram_init_file_name + ".hex"
-            bram_init_file = open(helper.string_io.normalize_path(xml_output_folder + bram_init_file_name), "w")
+            bram_init_file = open(helper.string_io.normalize_path(os.path.join(xml_output_folder,
+                                                                               bram_init_file_name)), "w")
             bram_init_file.write(bram_init)
             bram_init_file.close()
 
