@@ -31,6 +31,7 @@ import helper.xml_gen
 import helper.string_io
 import helper.xml_utils
 import helper.bus_definition
+import helper.arguments as arguments
 
 import helper.customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
@@ -803,14 +804,14 @@ class Xml2Slave:
 
         self.logger.info("Done!")
         self.logger.info('-' * 80)
+
+
 #
 #
 # MAIN STARTS HERE
 #
 #
 if __name__ == '__main__':
-    parser = helper.line_options.set_parser()
-    (line_options, line_args) = parser.parse_args()
-
-    xml2slave_inst = Xml2Slave(line_options, line_args)
+    args = arguments.Arguments()
+    xml2slave_inst = Xml2Slave(args, list())
     del xml2slave_inst
