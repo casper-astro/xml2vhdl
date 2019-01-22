@@ -23,16 +23,38 @@ import string_io
 import reserved_word
 import numpy as np
 
-# return a reversed ordered list of keys
+import customlogging as xml2vhdl_logging
+logger = xml2vhdl_logging.config_logger(__name__)
+
+
 def reverse_key_order(input_dict):
+    """Return a reversed ordered list of keys
+
+    Args:
+        input_dict (dict):
+
+    Returns:
+        (list): Reversed list of keys on input_dict
+
+    """
     key_list = []
     for node_id in sorted([int(x) for x in input_dict.keys()]):
         key_list.append(str(node_id))
     return list(reversed(key_list))
 
 
-# return position of first not-equal bit among addresses in add_list, returns -1 if there are not different bits
 def dec_check_bit(add_list, bit):
+    """Return position of first not-equal bit among addresses in add_list
+
+    Args:
+        add_list (list):
+
+        bit (???):
+
+    Returns:
+         (???): first not-equal bit among addresses in add_list or -1 if there are not different bits
+
+    """
     for b in reversed(range(0, bit)):
         for add0 in add_list:
             for add1 in add_list:
@@ -42,20 +64,38 @@ def dec_check_bit(add_list, bit):
 
 
 def dec_get_last_bit(bit_path):
+    """
+
+    Args:
+        bit_path (???):
+
+    Returns:
+         (???):
+
+    """
     bit_list = bit_path.split("_")
     ret = bit_list[len(bit_list)-1]
     ret = re.sub(r'v.*', "", ret)
     ret = int(ret)
-    # print "get_last_bit input: " + str(ret)
-    # print "get_last_bit output: " + bit_path
+    logger.debug('get_last_bit input: {ret}'.format(ret=ret))
+    logger.debug('get_last_bit output: {bit_path}'.format(bit_path=bit_path))
     if ret == -1:
         ret = 32
     return ret
 
 
 def dec_route_add(tree_dict):
+    """
+
+    Args:
+        tree_dict (???):
+
+    Returns:
+        (???):
+
+    """
     done = 0
-    # print tree_dict
+    logger.debug('tree_dict: {tree_dict}'.format(tree_dict=tree_dict))
     for path in tree_dict.keys():
         add_list = tree_dict[path]
         b = dec_check_bit(add_list,  dec_get_last_bit(path))
@@ -68,23 +108,27 @@ def dec_route_add(tree_dict):
                     list_0.append(add)
                 else:
                     list_1.append(add)
-            # print path + " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-            # print len(add_list)
-            # print len(list_0)
-            # print len(list_1)
-            # print len(list_0) + len(list_1)
+            logger.debug('{path} XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'.format(path=path))
+            logger.debug('{add_list_len}'.format(add_list_len=len(add_list)))
+            logger.debug('{list_0_len}'.format(list_0_len=len(list_0)))
+            logger.debug('{list_1_len}'.format(list_1_len=len(list_1)))
+            logger.debug('{list_01_len}'.format(list_01_len=len(list_0) + len(list_1)))
             bit_dict["0"] = list_0
             bit_dict["1"] = list_1
             tree_dict[path + "_" + str(b) + "v0"] = list_0
             tree_dict[path + "_" + str(b) + "v1"] = list_1
             tree_dict[path] = []
             done = 1
-    # print tree_dict
+    logger.debug('tree_dict: {tree_dict}'.format(tree_dict=tree_dict))
     return done, tree_dict
 
 
 class Slave:
+    """Creates a AXI4-Lite Slave
+
+    """
     def __init__(self, data_bus_size=32, size_indicate_bytes=0):
+        self.logger = xml2vhdl_logging.config_logger(name=__name__, class_name=self.__class__.__name__)
         self.dict = {}
         self._key_table = {}
         self._node_num = 0
@@ -98,8 +142,13 @@ class Slave:
         self.size_normalizer = self.get_size_normalizer()
         self.default_mask = "0x" + "FF"*self.data_byte_size
 
-    # reset the slave
     def reset(self):
+        """Reset the slave
+
+        Returns:
+            None
+
+        """
         self.dict = {}
         self._key_table = {}
         self._node_num = 0
@@ -108,19 +157,40 @@ class Slave:
         self.decode_dict = {}
 
     def get_atomicity(self):
+        """
+
+        Returns:
+            (???):
+
+        """
         if self.size_indicate_bytes == 0:
             return 1
         else:
             return self.data_byte_size
 
     def get_size_normalizer(self):
+        """
+
+        Returns:
+            (???):
+
+        """
         if self.size_indicate_bytes == 0:
             return self.data_byte_size
         else:
             return 1
 
-    # return range from mask
     def get_range_from_mask(self, mask, split="0"):
+        """Return range from mask
+
+        Args:
+            mask (???):
+            split (???):
+
+        Returns:
+            (???):
+
+        """
         if split is None:
             split = 0
         else:
@@ -141,9 +211,19 @@ class Slave:
         range_lo += split * self.data_bit_size
         return range_hi, range_lo
 
-    # populate the node dictionary
     def populate_node_dictionary(self, xml_node, xml_parent_node, hier_level):
-        this_dict = {}
+        """Populate the node dictionary
+
+        Args:
+            xml_node (???):
+            xml_parent_node (???):
+            hier_level (???):
+
+        Returns:
+             (???):
+
+        """
+        this_dict = dict()
         this_dict['hier_level'] = hier_level
         this_dict['this_node'] = xml_node
         this_dict['parent_node'] = xml_parent_node
@@ -224,21 +304,41 @@ class Slave:
         this_dict['hw_ignore'] = xml_node.get('hw_ignore')
         return this_dict
 
-    # populate all subnodes of a node of hierarchical level defined by target_level
     def populate_subnodes(self, node, target_level, current_level):
+        """# populate all subnodes of a node of hierarchical level defined by target_level
+
+        Args:
+            node (???):
+            target_level (???):
+            current_level (???):
+
+        Returns:
+             (???):
+
+        """
         if node is None:
             return -1
         else:
             for subnode in node:
                 if current_level == target_level:
-                    self.dict[str(self._node_num)] = self.populate_node_dictionary(subnode, node, current_level + 1)
+                    self.dict[str(self._node_num)] = self.populate_node_dictionary(subnode,
+                                                                                   node,
+                                                                                   current_level + 1)
                     self._key_table[str(subnode)] = int(self._node_num)
                     self._node_num += 1
                 else:
                     self.populate_subnodes(subnode, target_level, current_level + 1)
 
-    # populate the dictionary
     def populate_dict(self, root_node):
+        """Populate the dictionary
+
+        Args:
+            root_node (???):
+
+        Returns:
+            (???):
+
+        """
         self.reset()
         # populate root
         self.dict[str(0)] = self.populate_node_dictionary(root_node, None, 0)
@@ -263,9 +363,23 @@ class Slave:
     def get_hierarchical_level_number(self):
         return self._level
 
-    # return a list of requested objects with specified type among:
-    # "block", "register_without_bitfield", "bitfield":
     def get_object(self, object_type_list, include_ignored=True):
+        """Return a list of requested objects with specified type
+
+        Specific types are:
+
+        * ``block``
+        * ``register_without_bitfield``
+        * ``bitfield``
+
+        Args:
+            object_type_list (list of str):
+            include_ignored (bool, optional): Default value is ``True``
+
+        Returns:
+            (list): Sorted list of requested object types
+
+        """
         node_list = []
         sorted_list = []
         for node_id in reverse_key_order(self.dict):
@@ -278,12 +392,19 @@ class Slave:
         return sorted_list
 
     def compute_decoder_mask(self):
+        """
+
+        Returns:
+            None
+
+        """
         addresses = []
         for x in self.get_object(["block", "register_with_bitfield", "register_without_bitfield"]):
             addresses.append(self.dict[str(x)]['addressable'])
 
         add_num = len(addresses)
-        print "Addresses are " + str(add_num)
+        logger.info('Addresses are: {add_num}'
+                    .format(add_num=add_num))
         baddr = np.zeros((add_num, 32), dtype=np.int)
         tree_dict = {}
 
@@ -296,7 +417,7 @@ class Slave:
                     baddr[a, 31 - n] = 1
                 bit_mask = bit_mask >> 1
             a = a + 1
-        # print baddr
+        self.logger.debug('baddr: {baddr}'.format(baddr=baddr))
 
         tree_dict["-1v0"] = baddr
 
@@ -319,14 +440,20 @@ class Slave:
                         mask = mask | (1 << x)
                 self.decode_dict[str(int(add, 2))] = mask
 
-        # for address in sorted(decode_dict.keys()):
-        #   print "add:"
-        #   print address
-        #   print "mask:"
-        #   print hex(decode_dict[address])
+        self.logger.debug('Decode Dict:')
+        for address in sorted(self.decode_dict.keys()):
+            self.logger.debug('\taddr:')
+            self.logger.debug('\t{address}'.format(address=address))
+            self.logger.debug('\tmask:')
+            self.logger.debug('\t{mask}'.format(mask=hex(self.decode_dict[address])))
 
-    # return maximum addressable_id length
     def get_max_id_len(self):
+        """Return maximum addressable_id length
+
+        Returns:
+            (int): Length
+
+        """
         length = 0
         for node_id in reverse_key_order(self.dict):
             tmp = self.dict[node_id]['addressable_id']
@@ -340,14 +467,20 @@ class Slave:
         return length
 
     def get_size(self):
+        """
+
+        Returns:
+            (int): Size
+
+        """
         add_max = 0
         for node_id in self.get_object(["all"]):
             node_dict = self.dict[node_id]
             add = node_dict['addressable']
-            # print add
-            # if add == None:
-            #     print node_dict['complete_id']
-            #     print node_dict['type']
+            self.logger.debug('{add}'.format(add=add))
+            if add is None:
+                self.logger.debug('{complete_id}'.format(complete_id=node_dict['complete_id']))
+                self.logger.debug('{type}'.format(type=node_dict['type']))
             if int(node_dict['size']) > self.atom:
                 add += int(node_dict['size']) * self.size_normalizer
             if abs(add) > abs(add_max):
@@ -360,16 +493,26 @@ class Slave:
                 n += 1
         return 2 ** n
 
-    # OB fill child/parent fields
     def fill_child(self):
+        """OB fill child/parent fields
+
+        Returns:
+            None
+
+        """
         for this_node in self.dict:
             if self.dict[this_node]['parent_node'] is not None:
                 parent_key = self._key_table[str(self.dict[this_node]['parent_node'])]
                 self.dict[this_node]['parent_key'] = str(parent_key)
                 self.dict[str(parent_key)]['child_key'].append(int(this_node))
 
-    # OB fill absolute offset field walking from current node to root and accumulating offset
     def fill_absolute_offset(self):
+        """OB fill absolute offset field walking from current node to root and accumulating offset
+
+        Returns:
+            None
+
+        """
         # absolute_offset = 0
         for node_id in reverse_key_order(self.dict):
             if self.dict[node_id]['address'] is not None:
@@ -385,8 +528,13 @@ class Slave:
                     test_node = parent_id
                 self.dict[node_id]['absolute_offset'] = absolute_offset
 
-    # OB fill decoder mask field
     def fill_decoder_mask(self):
+        """OB fill decoder mask field
+
+        Returns:
+            None
+
+        """
         self.compute_decoder_mask()
         for node_id in reverse_key_order(self.dict):
             if self.dict[node_id]['addressable'] is not None:
@@ -394,8 +542,13 @@ class Slave:
                 add = str(int(add))
                 self.dict[node_id]['decoder_mask'] = self.decode_dict[add]
 
-    # OB fill complete id field
     def fill_complete_id(self):
+        """OB fill complete id field
+
+        Returns:
+            None
+
+        """
         for node_id in reverse_key_order(self.dict):
             current_node = node_id
             complete_id = self.dict[current_node]['this_id']
@@ -414,8 +567,13 @@ class Slave:
             self.dict[node_id]['addressable_id'] = re.sub(r"^(\w*\.)", "", complete_id)
             self.dict[node_id]['prev_id'] = prev_id
 
-    # OB propagate reset value to child nodes
     def propagate_reset_value(self):
+        """OB propagate reset value to child nodes
+
+        Returns:
+            None
+
+        """
         for node_id in self.get_object(["bitfield"]):
             parent_node_id = self.dict[node_id]['parent_key']
             if self.dict[node_id]['hw_rst'] is None and self.dict[parent_node_id]['hw_rst'] is not None:
@@ -431,8 +589,13 @@ class Slave:
                         rst_val = self.dict[parent_node_id]['hw_rst'] + "(" + str(self.dict[node_id]['range'][0]) + " downto " + str(self.dict[node_id]['range'][1]) + ")"
                     self.dict[node_id]['hw_rst'] = rst_val
 
-    # OB create generics resets dictionary
     def get_reset_generics(self):
+        """OB create generics resets dictionary
+
+        Returns:
+            None
+
+        """
         reset_generics_dict = {}
         for node_id in self.get_object(["bitfield", "register_with_bitfield", "register_without_bitfield"]):
             if self.dict[node_id]['hw_rst'] is not None:
@@ -449,20 +612,35 @@ class Slave:
                             reset_generics_dict[self.dict[node_id]['hw_rst']] = "std_logic_vector(" + str(hi_idx - lo_idx) + " downto 0)"
         return reset_generics_dict
 
-    # OB write default permission where it is not specified
     def default_permission(self):
+        """OB write default permission where it is not specified
+
+        Returns:
+             None
+
+        """
         for node_id in reverse_key_order(self.dict):
             if self.dict[node_id]['permission'] is None:
                 self.dict[node_id]['permission'] = 'rw'
 
-    # OB write default permission where it is not specified
     def default_reset(self):
+        """OB write default reset where it is not specified
+
+        Returns:
+            None
+
+        """
         for node_id in reverse_key_order(self.dict):
             if self.dict[node_id]['hw_rst'] is None:
                 self.dict[node_id]['hw_rst'] = "0x0"
 
-    # OB fill type field
     def fill_type(self):
+        """OB fill type field
+
+        Returns:
+            None
+
+        """
         for node_id in reverse_key_order(self.dict):
             if int(self.dict[node_id]['size']) > self.atom:
                 self.dict[node_id]['type'] = "block"
@@ -473,13 +651,20 @@ class Slave:
                     self.dict[node_id]['type'] = "bitfield"
                     self.dict[self.dict[node_id]['parent_key']]['type'] = "register_with_bitfield"
 
-    # OB fill addressable field
     def fill_addressable(self):
-        # An object is addressable if it is:
-        #        - block
-        #        - register_with_bitfield
-        #        - register_without_bitfield
-        #        - bitfield
+        """OB fill addressable field
+
+        An object is addressable if it is:
+
+        * ``block``
+        * ``register_with_bitfield``
+        * ``register_without_bitfield``
+        * ``bitfield``
+
+        Returns:
+            None
+
+        """
         for node_id in reverse_key_order(self.dict):
             if self.dict[node_id]['type'] == "block":
                 self.dict[node_id]['addressable'] = self.dict[node_id]['absolute_offset']
@@ -489,16 +674,31 @@ class Slave:
                 self.dict[node_id]['addressable'] = self.dict[self.dict[node_id]['parent_key']]['absolute_offset']
                 self.dict[self.dict[node_id]['parent_key']]['addressable'] = self.dict[self.dict[node_id]['parent_key']]['absolute_offset']
 
-    # OB return number of registers
     def get_nof_not_ignored_registers(self):
+        """OB return number of registers
+
+        Returns:
+            (int):
+
+        """
         return len(self.get_object(["register_without_bitfield", "register_with_bitfield"], include_ignored=False))
 
-    # OB return number of blocks
     def get_nof_not_ignored_blocks(self):
+        """OB return number of blocks
+
+        Returns:
+            (int):
+
+        """
         return len(self.get_object(["block"], include_ignored=False))
 
-    # OB check for clashing addresses
     def check_offset(self):
+        """OB check for clashing addresses
+
+        Returns:
+            None
+
+        """
         for x in self.get_object(["block", "register_with_bitfield", "register_without_bitfield"]):
             this_dict = self.dict[x]
             this_dict_size = int(this_dict['size']) * self.size_normalizer
@@ -507,31 +707,57 @@ class Slave:
                 other_dict_size = int(other_dict['size']) * self.size_normalizer
                 if this_dict['complete_id'] != other_dict['complete_id'] and "$s0_split$" not in this_dict['complete_id'] and "$s0_split$" not in other_dict['complete_id']:
                     if this_dict['addressable'] >= other_dict['addressable'] and this_dict['addressable'] < other_dict['addressable'] + other_dict_size:
-                        print "Error1: conflicting offsets:"
-                        print this_dict['complete_id'] + " " + hex(this_dict['addressable'])
-                        print other_dict['complete_id'] + " " + hex(other_dict['addressable'])
+                        # TODO Check hex is OK in the following formats.
+                        self.logger.error('Error1: conflicting offsets:')
+                        self.logger.error('\t{complete_id} {addressable}'
+                                          .format(complete_id=this_dict['complete_id'],
+                                                  addressable=hex(this_dict['addressable'])))
+                        self.logger.error('\t{complete_id} {addressable}'
+                                          .format(complete_id=other_dict['complete_id'],
+                                                  addressable=hex(other_dict['addressable'])))
                         sys.exit(1)
                     if this_dict['addressable'] + this_dict_size - 1 >= other_dict['addressable'] and this_dict['addressable'] + this_dict_size - 1 < other_dict['addressable'] + other_dict_size:
-                        print "Error2: conflicting offsets:"
-                        print this_dict['complete_id'] + " at offset " + hex(this_dict['addressable'])
-                        print other_dict['complete_id'] + " at offset " + hex(other_dict['addressable'])
+                        self.logger.error('Error2: conflicting offsets:')
+                        self.logger.error('\t{complete_id} at offset {addressable}'
+                                          .format(complete_id=this_dict['complete_id'],
+                                                  addressable=hex(this_dict['addressable'])))
+                        self.logger.error('\t{complete_id} at offset {addressable}'
+                                          .format(complete_id=other_dict['complete_id'],
+                                                  addressable=hex(other_dict['addressable'])))
+                        self.logger.error('Exiting...')
                         sys.exit(1)
 
-    # OB check that the size of the slave is smaller than absolute offset
     def check_address_requirement(self):
+        """OB check that the size of the slave is smaller than absolute offset
+
+        Returns:
+            None
+
+        """
         for x in self.get_object(["block"]):
             this_dict = self.dict[x]
             this_addr = this_dict['addressable']
             this_size = int(this_dict['size']) * self.size_normalizer
             if this_addr & (this_size - 1) != 0:
-                print "Error! It should be (absolute_offset & (size-1)) = 0x0"
-                print this_dict['complete_id'] + " doesn't meet this requirement!"
-                print this_dict['complete_id'] + " absolute offset is " + hex(this_addr)
-                print this_dict['complete_id'] + " size is " + str(this_size) + " bytes"
+                self.logger.error('It should be (absolute_offset & (size-1)) = 0x0')
+                self.logger.error('\t{complete_id} does not meet this requirement!'
+                                  .format(complete_id=this_dict['complete_id']))
+                self.logger.error('\t{complete_id} absolute offset is: {offset}'
+                                  .format(complete_id=this_dict['complete_id'],
+                                          offset=hex(this_addr)))
+                self.logger.error('\t{complete_id} size is: {bytes}'
+                                  .format(complete_id=this_dict['complete_id'],
+                                          bytes=this_size))
+                self.logger.error('Exiting...')
                 sys.exit(1)
 
-    # OB check for clashing bit-field
     def check_bitfield(self):
+        """OB check for clashing bit-field
+
+        Returns:
+            None
+
+        """
         for x in self.get_object(["register_with_bitfield"]):
             this_dict = self.dict[x]
             for m in this_dict['child_key']:
@@ -540,21 +766,38 @@ class Slave:
                         mask_0 = int(self.dict[str(m)]['mask'], 16)
                         mask_1 = int(self.dict[str(n)]['mask'], 16)
                         if mask_0 & mask_1 != 0:
-                            print "Error: conflicting bitfields!"
-                            print self.dict[str(m)]['complete_id']
-                            print "conflicts with"
-                            print self.dict[str(n)]['complete_id']
+                            self.logger.error('conflicting bitfields!')
+                            self.logger.error('\t{complete_id} conflicts with: {conflict_id}'
+                                              .format(complete_id=self.dict[str(m)]['complete_id'],
+                                                      conflict_id=self.dict[str(n)]['complete_id']))
+                            self.logger.error('Exiting...')
                             sys.exit(1)
 
-    # OB check for reserved words occurrence
     def check_reserved_words(self):
+        """OB check for reserved words occurrence
+
+        Returns:
+            None
+
+        """
         for node_id in self.dict.keys():
             if string.lower(self.dict[node_id]['this_id']) in reserved_word.vhdl_reserved_words:
-                print "Error: Keyword \"" + self.dict[node_id]['this_id'] + "\" is used as node_id!"
-                print "Exiting..."
+                self.logger.error('Keyword: "{id}" is used as node_id!'
+                                  .format(id=self.dict[node_id]['this_id']))
+                self.logger.error('Exiting...')
                 sys.exit(1)
 
     def is_wide_register(self, node_dict):
+        """
+
+        Args:
+
+            node_dict (dict):
+
+        Returns:
+            (???):
+
+        """
         ret = False
         # if node_dict['range'] != None:
         #     if node_dict['range'][0] > self.data_bit_size - 1:
@@ -565,6 +808,16 @@ class Slave:
         return ret
 
     def is_split_register(self, node_dict):
+        """
+
+        Args:
+
+            node_dict (dict):
+
+        Returns:
+            (???):
+
+        """
         ret = False
         if node_dict['split'] != None:
             if int(node_dict['split']) >= 0:
@@ -572,9 +825,18 @@ class Slave:
         return ret
 
     def get_split_splice(self, node_dict):
+        """
+
+        Args:
+
+            node_dict (dict):
+
+        Returns:
+            (???):
+
+        """
         if node_dict['split'] == None:
             return -1
         else:
             return int(node_dict['split'])
-
 
