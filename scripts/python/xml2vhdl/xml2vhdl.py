@@ -55,77 +55,86 @@ def xml2vhdl_exec(options, cli_args, xml_file_name, gen_type):
     return options.path
 
 
-if __name__ == '__main__':
-    args = arguments.Arguments()
+class Xml2VhdlGenerate(object):
+    """
 
-    xml_list = []
-    input_folder_list = args.input_folder
+    """
+    def __init__(self, args):
+        self.logger = xml2vhdl_logging.config_logger(name=__name__, class_name=self.__class__.__name__)
+        xml_list = list()
+        input_folder_list = args.input_folder
 
-    if input_folder_list != []:
-        xml_list = helper.string_io.file_list_generate(input_folder_list, '.xml')
-    for n in args.input_file:
-        xml_list.append(n)
+        if input_folder_list:
+            xml_list = helper.string_io.file_list_generate(input_folder_list, '.xml')
+        for n in args.input_file:
+            xml_list.append(n)
 
-    # building dependency tree
-    depend_tree = []
-    for xml in xml_list:
-        tree = ET.parse(xml)
-        root = tree.getroot()
-        depend = {"file": xml,
-                  "id": root.get('id'),
-                  "depend_on": [],
-                  "output": os.path.basename(xml).replace(".xml", "_output.xml")}
-        for node in root.iter():
-            link = node.get('link')
-            hw_type = node.get('hw_type')
-            if link != None and hw_type != "netlist":
-                # do not need to compile netlists, however the XML must be in the path
-                if link not in depend['depend_on']:
-                    depend['depend_on'].append(link)
-        depend_tree.append(depend)
+        # building dependency tree
+        depend_tree = list()
+        for xml in xml_list:
+            tree = ET.parse(xml)
+            root = tree.getroot()
+            depend = {"file": xml,
+                      "id": root.get('id'),
+                      "depend_on": [],
+                      "output": os.path.basename(xml).replace(".xml", "_output.xml")}
+            for node in root.iter():
+                link = node.get('link')
+                hw_type = node.get('hw_type')
+                if link is not None and hw_type != "netlist":
+                    # do not need to compile netlists, however the XML must be in the path
+                    if link not in depend['depend_on']:
+                        depend['depend_on'].append(link)
+            depend_tree.append(depend)
 
-    # retrieving XML files from dependency tree bottom to up to create compile order
-    compile_order = list()
-    while True:
-        stop = 1
-        for xml in depend_tree:
-            if xml['depend_on'] == []:
-                compile_order.append(xml)
-                depend_tree.remove(xml)
-                stop = 0
+        # retrieving XML files from dependency tree bottom to up to create compile order
+        compile_order = list()
+        while True:
+            stop = 1
+            for xml in depend_tree:
+                if not xml['depend_on']:
+                    compile_order.append(xml)
+                    depend_tree.remove(xml)
+                    stop = 0
+                else:
+                    for file_link in xml['depend_on']:
+                        for xml_done in compile_order:
+                            if file_link == xml_done['output']:
+                                # print "Dependency found"
+                                xml['depend_on'].remove(file_link)
+                                stop = 0
+            if stop == 1:
+                break
+
+        # Checking if there are unresolved dependencies
+        if depend_tree:
+            self.logger.warning("Unresolved dependencies found: ")
+            for n in depend_tree:
+                self.logger.warning('\t{n}'
+                                    .format(n=n))
+            raw_input("Press a key to continue...")
+
+        self.logger.info('-' * 80)
+        self.logger.info("Compile order:")
+        for n in compile_order:
+            self.logger.info('\t{id}'
+                             .format(id=n['id']))
+
+        external_list = list()
+        xml_path_list = list()
+        for xml in compile_order:
+            self.logger.info("Analysing: {file}"
+                             .format(file=xml['file']))
+            tree = ET.parse(xml['file'])
+            root = tree.getroot()
+            if root.get('hw_type') == "external":
+                external_list.append(xml['file'])
             else:
-                for file_link in xml['depend_on']:
-                    for xml_done in compile_order:
-                        if file_link == xml_done['output']:
-                            # print "Dependency found"
-                            xml['depend_on'].remove(file_link)
-                            stop = 0
-        if stop == 1:
-            break
+                args.path = xml2vhdl_exec(args, list(), xml['file'], root.get('hw_type'))
+        logger.info(external_list)
 
-    # Checking if there are unresolved dependencies
-    if depend_tree != []:
-        logger.warning("Unresolved dependencies found: ")
-        for n in depend_tree:
-            logger.warning('\t{}'
-                           .format(n))
-        raw_input("Press a key to continue...")
 
-    logger.info('-' * 80)
-    logger.info("Compile order:")
-    for n in compile_order:
-        logger.info('\t{}'
-                    .format(n['id']))
+if __name__ == '__main__':
+    Xml2VhdlGenerate(arguments.Arguments())
+    logger.info('Successfully Generated VHDL from XML.')
 
-    external_list = list()
-    xml_path_list = list()
-    for xml in compile_order:
-        logger.info("Analysing: {}"
-                    .format(xml['file']))
-        tree = ET.parse(xml['file'])
-        root = tree.getroot()
-        if root.get('hw_type') == "external":
-            external_list.append(xml['file'])
-        else:
-            args.path = xml2vhdl_exec(args, list(), xml['file'], root.get('hw_type'))
-    logger.info(external_list)
