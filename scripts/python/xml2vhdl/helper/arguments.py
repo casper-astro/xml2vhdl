@@ -5,9 +5,9 @@
 ``helper/arguments.py``
 ***********************
 
-`BSD`_ © 2018-2019 Science and Technology Facilities Council  & contributors
+`LICENSE`_ © 2018-2019 Science and Technology Facilities Council & contributors
 
-.. _BSD: _static/LICENSE
+.. _LICENSE: _static/LICENSE_STFC
 
 ``arguments.py`` is a helper module provided to define and configure the argument passing and parsing for the
 main modules.

@@ -5,9 +5,9 @@
 ``helper/customlogging.py``
 ***************************
 
-`BSD`_ © 2018-2019 Science and Technology Facilities Council  & contributors
+`LICENSE`_ © 2018-2019 Science and Technology Facilities Council & contributors
 
-.. _BSD: _static/LICENSE
+.. _LICENSE: _static/LICENSE_STFC
 
 ``customlogging.py`` is a helper module provided to define and configure consistent logging. The logging
 configuration is handled via ``../logging.yml`` YAML file and uses ``colorlog`` for console output.
