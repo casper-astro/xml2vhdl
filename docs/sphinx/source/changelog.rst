@@ -6,6 +6,7 @@
 Changelog
 #########
 
+- :support:`-` Added ``./docs/sphinx/source/_static`` contents to ``git`` for Read the Docs.
 - :support:`-` Added ``breathe`` to ``requirements.txt`` for Read the Docs.
 - :support:`-` Added ``releases`` to ``requirements.txt`` for Read the Docs.
 - :support:`-` Added ``LICENSE_STFC``  for referencing license from code developed by STFC.

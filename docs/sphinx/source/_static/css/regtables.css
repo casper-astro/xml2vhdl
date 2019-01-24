@@ -1,0 +1,58 @@
+.wy-nav-content {
+    max-width: none;
+}
+
+address {
+	font-style: normal;
+	color: #2A3D61;
+}
+
+table.doxtable caption {
+	caption-side: top;
+}
+
+table.doxtable {
+	border-collapse:collapse;
+    margin-top: 1px;
+    margin-bottom: 1px;
+}
+
+table.doxtable td {
+	border: 1px solid #2D4068;
+	font-size: 80%;
+	padding: 1px 1px 1px;
+    border-collapse:collapse;
+    position: relative;
+}
+
+table.doxtable th {
+    background-color: #374F7F;
+    color: #FFFFFF;
+    font-size: 75%;
+    padding-bottom: 4px;
+    padding-top: 5px;
+    border: 1px solid #2D4068;
+    padding: 3px 7px 2px;
+    border-collapse:collapse;
+    position: relative;
+}
+
+table.doxtable td pre {
+    display: block;
+    font-family: monospace;
+    background: none;
+    white-space: pre;
+    margin: 0em 0;
+}
+
+table.doxtable td span {
+	padding: 3px 7px 2px;
+    transform-origin: 0 50%;
+    transform: rotate(-90deg);
+    background: none;
+    white-space: nowrap; 
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+}
