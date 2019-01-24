@@ -12,6 +12,7 @@ logging = "*"
 lxml = "*"
 pyyaml = "*"
 releases = "*"
+breathe = "*"
 
 [requires]
 python_version = "2.7"

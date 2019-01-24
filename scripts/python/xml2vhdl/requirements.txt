@@ -1,5 +1,6 @@
 alabaster==0.7.12
 babel==2.6.0
+breathe==4.11.1
 certifi==2018.11.29
 chardet==3.0.4
 colorlog==4.0.2
