@@ -4,7 +4,7 @@
 Readme
 ######
 
-``XML2VHDL`` is a python script to handle generate ```XML`` files to ``AXI4-Lite`` Memory Mapped locations.
+``XML2VHDL`` is a python script to handle generate ``XML`` files to ``AXI4-Lite`` Memory Mapped locations.
 
 License
 -------

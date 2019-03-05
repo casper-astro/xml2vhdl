@@ -6,6 +6,10 @@
 Changelog
 #########
 
+- :support:`-` Restructured layout of ``xml2vhdl`` to allow for use of ``setuptools``. Added :mod:`setup`
+  which can be executed using: ``python setup.py sdist bdist_wheel`` from:
+  ``$REPO_ROOT/tools/xml2vhdl/scripts/python/xml2vhdl-uo``
+- :support:`-` Added ``MANIFEST.in`` to include all files required by ``xml2vhdl`` to ``PyPi``.
 - :support:`-` Added ``./docs/sphinx/source/_static`` contents to ``git`` for Read the Docs.
 - :support:`-` Added ``breathe`` to ``requirements.txt`` for Read the Docs.
 - :support:`-` Added ``releases`` to ``requirements.txt`` for Read the Docs.
