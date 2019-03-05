@@ -1,7 +1,6 @@
 include README.rst
 include LICENSE
-include xml2vhdl/example_slave/example_slave.xml
-include xml2vhdl/template/*.vhd
-include xml2vhdl/axi4lite/*.vhd
-include xml2vhdl/logging.yml
-include xml2vhdl/regtables.css
+global-include *.yml
+global-include *.css
+recursive-include xml2vhdl/example_slave *.xml
+recursive-include xml2vhdl/template *.vhd

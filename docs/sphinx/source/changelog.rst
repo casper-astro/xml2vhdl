@@ -6,6 +6,8 @@
 Changelog
 #########
 
+- :release:`0.1.16 <20190305>`
+- :bug:`-` Fixed paths to files referenced in packaged version.
 - :support:`-` Restructured layout of ``xml2vhdl`` to allow for use of ``setuptools``. Added :mod:`setup`
   which can be executed using: ``python setup.py sdist bdist_wheel`` from:
   ``$REPO_ROOT/tools/xml2vhdl/scripts/python/xml2vhdl-uo``

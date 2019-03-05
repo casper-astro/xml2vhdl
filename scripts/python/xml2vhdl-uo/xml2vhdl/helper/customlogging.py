@@ -21,11 +21,11 @@ import logging
 import logging.config
 
 
-def setup_logging(default_path='logging.yml', default_level=logging.INFO):
+def setup_logging(logr_settings='../logging.yml', default_level=logging.INFO):
     """Setup logging configuration from a YAML file
 
     Args:
-        default_path (str, optional): Defines the relative location of the logging configuration file,
+        logr_settings (str, optional): Defines the relative location of the logging configuration file,
         from the root module. Default value: ``logging.yml``
         default_level (logging attr, optional): Sets the default logging level. Default value: logging.INFO
 
@@ -33,8 +33,9 @@ def setup_logging(default_path='logging.yml', default_level=logging.INFO):
         None
 
     """
-    if os.path.exists(default_path):
-        with open(default_path, 'rt') as f:
+    logr_settings = os.path.abspath(os.path.join(os.path.dirname(__file__), logr_settings))
+    if os.path.isfile(logr_settings):
+        with open(logr_settings, 'rt') as f:
             config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)
     else:
@@ -42,7 +43,7 @@ def setup_logging(default_path='logging.yml', default_level=logging.INFO):
 
 
 logger = logging.getLogger(__name__)
-setup_logging(default_path='logging.yml', default_level=logging.INFO)
+setup_logging(logr_settings='../logging.yml', default_level=logging.INFO)
 
 
 def constant(f):
@@ -114,7 +115,7 @@ def config_logger(name, class_name=None):
     if class_name is None:
         logr = logging.getLogger('{}'
                                  .format(name))
-        setup_logging(default_path='logging.yml', default_level=logging.INFO)
+        setup_logging(logr_settings='logging.yml', default_level=logging.INFO)
     else:
         logr = logging.getLogger('{}.{}'
                                  .format(name, class_name))

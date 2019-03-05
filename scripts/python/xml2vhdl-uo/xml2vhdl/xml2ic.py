@@ -863,7 +863,8 @@ class Xml2Ic:
             self.logger.info('Generating HTML Tables from: {}'
                              .format(xml_file_name))
             xml2html(xml_file_name, html_file_name, cmd_str)
-            shutil.copy('regtables.css', html_dir_name)
+            shutil.copy(os.path.join(os.path.dirname(__file__), 'regtables.css'), html_dir_name)
+
             self.logger.info('Generated HTML File: {}'
                              .format(html_file_name))
             xml_compressed = zlib.compress(myxml)

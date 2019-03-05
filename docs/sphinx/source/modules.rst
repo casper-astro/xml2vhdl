@@ -22,6 +22,9 @@ Modules
 .. automodule:: reserved_word
    :members:
 
+.. automodule:: setup
+   :members:
+
 .. automodule:: slave
    :members:
 

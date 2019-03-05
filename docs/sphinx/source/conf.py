@@ -5,9 +5,17 @@
 import os
 import sys
 
-sys.path.append(os.path.abspath('../../../scripts/python/xml2vhdl'))
-sys.path.append(os.path.abspath('../../../scripts/python/xml2vhdl/example_slave'))
-sys.path.append(os.path.abspath('../../../scripts/python/xml2vhdl/helper'))
+sys.path.append(os.path.abspath('../../../scripts/python/xml2vhdl-uo'))
+sys.path.append(os.path.abspath('../../../scripts/python/xml2vhdl-uo/xml2vhdl'))
+sys.path.append(os.path.abspath('../../../scripts/python/xml2vhdl-uo/xml2vhdl_uo.egg-info'))
+sys.path.append(os.path.abspath('../../../scripts/python/xml2vhdl-uo/dist'))
+sys.path.append(os.path.abspath('../../../scripts/python/xml2vhdl-uo/build'))
+sys.path.append(os.path.abspath('../../../scripts/python/xml2vhdl-uo/xml2vhdl/example_slave'))
+sys.path.append(os.path.abspath('../../../scripts/python/xml2vhdl-uo/xml2vhdl/helper'))
+sys.path.append(os.path.abspath('../../../scripts/python/xml2vhdl-uo/build/lib'))
+sys.path.append(os.path.abspath('../../../scripts/python/xml2vhdl-uo/build/bdist.linux-x86_64'))
+sys.path.append(os.path.abspath('../../../scripts/python/xml2vhdl-uo/build/lib/xml2vhdl'))
+sys.path.append(os.path.abspath('../../../scripts/python/xml2vhdl-uo/build/lib/xml2vhdl/helper'))
 
 project = u'XML2VHDL'
 copyright = u'2019, University of Oxford'
@@ -45,7 +53,7 @@ releases_release_uri = 'https://bitbucket.org/ricch/xml2vhdl/src/%s'
 
 ################################################################################
 # The following Settings are Copied from Template File:
-# /data2/users/mjr59/local_svn_working_copy/tools/fpgaflow/scripts/python/fpgaflow/templates/sphinx/1.8.2/templates/conf.py
+# /data2/users/mjr59/local_svn_working_copy/tools/fpgaflow/scripts/python/fpgaflow-esdg/fpgaflow/templates/sphinx/1.8.2/templates/conf.py
 ################################################################################
 extensions = [
     'sphinx.ext.autodoc',

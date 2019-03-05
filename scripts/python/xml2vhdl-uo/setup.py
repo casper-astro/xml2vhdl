@@ -28,6 +28,7 @@ if __name__ == "__main__":
         long_description_content_type="text/x-rst",
         url="https://bitbucket.org/ricch/xml2vhdl",
         packages=setuptools.find_packages(),
+        include_package_data=True,
         classifiers=[
             "Programming Language :: Python :: 2.7",
             "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
