@@ -19,7 +19,7 @@ if __name__ == "__main__":
         long_description = fh.read()
 
     setuptools.setup(
-        name="xml2vhdl-uo",
+        name="xml2vhdl-ox",
         version="0.1.16",
         author="Department of Physics",
         author_email="xml2vhdl@ox.ac.uk",
