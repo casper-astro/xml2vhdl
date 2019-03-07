@@ -107,11 +107,10 @@ class Xml2VhdlGenerate(object):
 
         # Checking if there are unresolved dependencies
         if depend_tree:
-            self.logger.warning("Unresolved dependencies found: ")
+            self.logger.critical("Unresolved dependencies found: ")
             for n in depend_tree:
-                self.logger.warning('\t{n}'
-                                    .format(n=n))
-            raw_input("Press a key to continue...")
+                self.logger.critical('\t{n}'
+                                     .format(n=n))
 
         self.logger.info('-' * 80)
         self.logger.info("Compile order:")
