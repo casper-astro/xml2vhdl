@@ -478,8 +478,11 @@ class Slave:
             if add is None:
                 self.logger.debug('{complete_id}'.format(complete_id=node_dict['complete_id']))
                 self.logger.debug('{type}'.format(type=node_dict['type']))
-            if int(node_dict['size']) > self.atom:
-                add += int(node_dict['size']) * self.size_normalizer
+            # Why would we only add the size if > the atomic unit?
+            # To get the size we always need address + size(?)
+            #if int(node_dict['size']) > self.atom:
+            #    add += int(node_dict['size']) * self.size_normalizer
+            add += int(node_dict['size']) * self.size_normalizer
             if abs(add) > abs(add_max):
                 add_max = add
         n = 0
