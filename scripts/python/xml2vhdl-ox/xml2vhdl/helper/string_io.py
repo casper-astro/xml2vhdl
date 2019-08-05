@@ -16,7 +16,7 @@ import re
 import os
 import sys
 
-import customlogging as xml2vhdl_logging
+from . import customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
 
 

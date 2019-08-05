@@ -18,11 +18,11 @@ import os
 import yaml
 import argparse
 
-import customlogging as log
+from . import customlogging as log
 logger = log.config_logger(name=__name__)
 
-import version as my_version
-rev = filter(str.isdigit, "$Rev$")  # Do Not Modify this Line
+from . import version as my_version
+rev = list(filter(str.isdigit, "$Rev$"))  # Do Not Modify this Line
 version = my_version.Version(0, 6, 0, svn_rev=rev, disable_svn_logging=True)
 __version__ = version.get_version()
 __str__ = my_version.about(__name__, __version__, version.revision)

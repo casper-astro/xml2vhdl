@@ -15,13 +15,13 @@
 import os
 import re
 import shutil
-import help
-import string_io
+from . import help
+from . import string_io
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 # from xml2htmltable import xml2html
 
-import customlogging as xml2vhdl_logging
+from . import customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
 
 

@@ -22,7 +22,7 @@ import xml.etree.ElementTree as ET
 from optparse import OptionParser
 import os
 
-import helper.customlogging as xml2vhdl_logging
+from .helper import customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
 
 
@@ -403,8 +403,8 @@ class xml2html:
         sorted_multifieldtableitems = []
 
         for node in root.iter('node'):
-            if 'address' in node.attrib.keys():
-                if 'mask' in node.attrib.keys():
+            if 'address' in list(node.attrib.keys()):
+                if 'mask' in list(node.attrib.keys()):
                     mask = hex_format(int(node.get('mask'), 16))
                     span = 0
                     if node.get('absolute_id'):
@@ -432,7 +432,7 @@ class xml2html:
 
                     alltableitems.append(newfield)
                 else:
-                    if 'description' in node.attrib.keys():
+                    if 'description' in list(node.attrib.keys()):
                         # print '[Multi-Field Register]', node.get('id')
                         if node.get('absolute_id'):
                             multiaddroffset = hex_format(int(node.get('absolute_offset'), 16))
@@ -440,7 +440,7 @@ class xml2html:
                             multiaddroffset = hex_format(int(node.get('address'), 16))
                         # span = 1
                         for field in node.iter('node'):                           
-                            if 'mask' in field.attrib.keys():
+                            if 'mask' in list(field.attrib.keys()):
                                 span = 1                                
                                 if field.get('absolute_id'):
                                     newfield = [node.get('absolute_id'),

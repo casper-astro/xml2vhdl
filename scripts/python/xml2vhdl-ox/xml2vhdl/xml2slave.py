@@ -24,15 +24,16 @@ import re
 import sys
 import math
 import numpy as np
-import helper.help
-import helper.slave
-import helper.xml_gen
-import helper.string_io
-import helper.xml_utils
-import helper.bus_definition
-import helper.arguments as arguments
+from . import helper
+from .helper import help
+from .helper import slave
+from .helper import xml_gen
+from .helper import string_io
+from .helper import xml_utils
+from .helper import bus_definition
+from .helper import arguments
 
-import helper.customlogging as xml2vhdl_logging
+from .helper import customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
 
 
@@ -595,7 +596,7 @@ class Xml2Slave:
                         snippet += "\t" + "user_rdat => " + xml_mm.root.get('id') + "_<name>_rdat\n"
 
                         snippet += ");\n\n"
-                        size = np.log2(int(node_dict['size']) / bus.atom)
+                        size = np.log2(int(node_dict['size']) // bus.atom)
                         snippet = snippet.replace("<size>", str(int(math.ceil(size))))
                         snippet = snippet.replace("<dat_width>", str(int(node_dict['hw_dp_ram_width'])))
                         snippet = snippet.replace("<ipb_lat>", str(int(node_dict['hw_dp_ram_bus_lat'])))

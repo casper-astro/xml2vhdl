@@ -18,7 +18,7 @@ PEP440 guidelines.
    towards the end of this module.
 
 """
-import customlogging as log
+from . import customlogging as log
 logger = log.config_logger(name=__name__)
 
 
@@ -156,7 +156,7 @@ class Version:
         return self.version
 
 
-rev = filter(str.isdigit, "$Rev$")  # Do Not Modify this Line
+rev = list(filter(str.isdigit, "$Rev$"))  # Do Not Modify this Line
 version = Version(1, 1, 0, prerelease='rc', svn_rev=rev, disable_svn_logging=True)
 
 __version__ = version.get_version()

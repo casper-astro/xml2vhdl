@@ -15,12 +15,11 @@
 import re
 import os
 import sys
-import string
-import string_io
-import reserved_word
+from . import string_io
+from . import reserved_word
 import numpy as np
 
-import customlogging as xml2vhdl_logging
+from . import customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
 
 
@@ -35,7 +34,7 @@ def reverse_key_order(input_dict):
 
     """
     key_list = []
-    for node_id in sorted([int(x) for x in input_dict.keys()]):
+    for node_id in sorted([int(x) for x in list(input_dict.keys())]):
         key_list.append(str(node_id))
     return list(reversed(key_list))
 
@@ -52,7 +51,7 @@ def dec_check_bit(add_list, bit):
          (???): first not-equal bit among addresses in add_list or -1 if there are not different bits
 
     """
-    for b in reversed(range(0, bit)):
+    for b in reversed(list(range(0, bit))):
         for add0 in add_list:
             for add1 in add_list:
                 if add0[b] != add1[b]:
@@ -93,7 +92,7 @@ def dec_route_add(tree_dict):
     """
     done = 0
     logger.debug('tree_dict: {tree_dict}'.format(tree_dict=tree_dict))
-    for path in tree_dict.keys():
+    for path in list(tree_dict.keys()):
         add_list = tree_dict[path]
         b = dec_check_bit(add_list,  dec_get_last_bit(path))
         if b > -1:
@@ -134,7 +133,7 @@ class Slave:
         self.decode_dict = {}
         self.size_indicate_bytes = size_indicate_bytes
         self.data_bit_size = data_bus_size
-        self.data_byte_size = self.data_bit_size / 8
+        self.data_byte_size = self.data_bit_size // 8
         self.atom = self.get_atomicity()
         self.size_normalizer = self.get_size_normalizer()
         self.default_mask = "0x" + "FF"*self.data_byte_size
@@ -202,7 +201,7 @@ class Slave:
                     range_lo = bit_idx
                 else:
                     range_hi = bit_idx
-            mask_int /= 2
+            mask_int //= 2
             bit_idx += 1
         range_hi += split * self.data_bit_size
         range_lo += split * self.data_bit_size
@@ -427,7 +426,7 @@ class Slave:
             if tree_dict[bit_path] != []:
                 add_bits = tree_dict[bit_path][0]
                 add = ""
-                for n in reversed(range(32)):
+                for n in reversed(list(range(32))):
                     add = add + str(add_bits[n])
                 bit_list = bit_path.split("_")
                 mask = 0
@@ -780,8 +779,8 @@ class Slave:
             None
 
         """
-        for node_id in self.dict.keys():
-            if string.lower(self.dict[node_id]['this_id']) in reserved_word.vhdl_reserved_words:
+        for node_id in list(self.dict.keys()):
+            if str.lower(self.dict[node_id]['this_id']) in reserved_word.vhdl_reserved_words:
                 self.logger.error('Keyword: "{id}" is used as node_id!'
                                   .format(id=self.dict[node_id]['this_id']))
                 self.logger.error('Exiting...')

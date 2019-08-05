@@ -134,28 +134,28 @@ attribute_description['hw_ignore'] = \
 
 
 def print_help():
-    print
-    print "Supported XML attributes:"
-    print
+    print()
+    print("Supported XML attributes:")
+    print()
     for n in sorted(allowed_attribute_value.keys()):
-        print "'" + n + "'"
+        print("'" + n + "'")
         dedented_text = textwrap.dedent("Description: " + re.sub(r" +", ' ', attribute_description[n])).strip()
-        print textwrap.fill(dedented_text, initial_indent='      ', subsequent_indent='      ' + ' ' * 13,
-                            width=80)
-        print "      Allowed values: " + " | ".join(allowed_attribute_value[n])
-        print "      Default value:  " + default_attribute_value[n]
-        print
+        print(textwrap.fill(dedented_text, initial_indent='      ', subsequent_indent='      ' + ' ' * 13,
+                            width=80))
+        print("      Allowed values: " + " | ".join(allowed_attribute_value[n]))
+        print("      Default value:  " + default_attribute_value[n])
+        print()
 
 
 def print_log():
-    print
-    print "History Log:"
-    print
-    for n in range(len(version) / 2):
-        print "version " + str(version[2 * n])
+    print()
+    print("History Log:")
+    print()
+    for n in range(len(version) // 2):
+        print("version " + str(version[2 * n]))
         dedented_text = textwrap.dedent(re.sub(r" +", ' ', version[2 * n + 1])).strip()
-        print textwrap.fill(dedented_text, width=80)
-        print
+        print(textwrap.fill(dedented_text, width=80))
+        print()
 
 
 def get_version():

@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     setuptools.setup(
         name="xml2vhdl-ox",
-        version="0.1.16",
+        version="0.2.0",
         author="Department of Physics",
         author_email="xml2vhdl@ox.ac.uk",
         description="XML to VHDL Memory-Mapped Generation",

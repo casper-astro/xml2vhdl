@@ -16,13 +16,13 @@
 import os
 import sys
 import copy
-import help
+from . import help
 # import shutil
-import string_io
+from . import string_io
 # import xml.dom.minidom
 import xml.etree.ElementTree as ET
 
-import customlogging as xml2vhdl_logging
+from . import customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
 
 
@@ -46,13 +46,13 @@ def get_parameters_dict(constants):
         else:
             param_dict[x[0]] = x[1]
     # print param_dict
-    for key in param_dict.keys():
-        if key in help.allowed_attribute_value.keys():
+    for key in list(param_dict.keys()):
+        if key in list(help.allowed_attribute_value.keys()):
             logger.error('Constant has not allowed name: {key}'
                          .format(key=key))
             logger.error('Exiting...')
             sys.exit(1)
-        if param_dict[key] in help.allowed_attribute_value.keys():
+        if param_dict[key] in list(help.allowed_attribute_value.keys()):
             logger.error('Constant has not allowed value: {value}'
                          .format(value=param_dict[key]))
             logger.error('Exiting...')
@@ -69,7 +69,7 @@ class XmlMemoryMap:
         self.tree = ET.parse(input_file_name)
         self.root = self.tree.getroot()
         self.data_bit_size = data_bus_size
-        self.data_byte_size = data_bus_size / 8
+        self.data_byte_size = data_bus_size // 8
         self.data_full_mask = 2**self.data_bit_size - 1
         if size_indicate_bytes == 0:
             self.atom = 1
@@ -91,7 +91,7 @@ class XmlMemoryMap:
         while True:
             found = 0
             for node in self.root.iter('node'):
-                if 'link' in node.attrib.keys():
+                if 'link' in list(node.attrib.keys()):
                     found = 1
                     link = node.attrib['link']
                     link_found = ""
@@ -130,7 +130,7 @@ class XmlMemoryMap:
 
         """
         for node in self.root.iter('node'):
-            if 'hw_dp_ram_init_file' in node.attrib.keys():
+            if 'hw_dp_ram_init_file' in list(node.attrib.keys()):
                 init_file = node.attrib['hw_dp_ram_init_file']
                 abs_path = ""
                 xml_path = os.path.dirname(os.path.abspath(input_file_name))
@@ -173,7 +173,7 @@ class XmlMemoryMap:
             for node0 in self.root.iter('node'):
                 attrib_dict = node0.attrib
                 for attrib in attrib_dict:
-                    if attrib_dict[attrib] in param_dict.keys():
+                    if attrib_dict[attrib] in list(param_dict.keys()):
                         node0.set(attrib, param_dict[attrib_dict[attrib]])
 
     def exclude_hw_ignore(self):
@@ -198,7 +198,7 @@ class XmlMemoryMap:
         """
         for node0 in self.root.iter('node'):
             for node1 in node0.findall('node'):
-                if 'array' in node1.attrib.keys():
+                if 'array' in list(node1.attrib.keys()):
                     array = int(node1.attrib['array'])
                     if array > 0:
                         self.logger.debug('-' * 80)

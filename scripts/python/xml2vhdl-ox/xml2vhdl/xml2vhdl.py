@@ -20,18 +20,19 @@ Todo:
 
 """
 import os
-import helper.help
-import helper.slave
-import helper.xml_gen
-import helper.string_io
-import helper.xml_utils
-import helper.arguments as arguments
-import helper.bus_definition
+from . import helper
+from .helper import help
+from .helper import slave
+from .helper import xml_gen
+from .helper import string_io
+from .helper import xml_utils
+from .helper import arguments as arguments
+from .helper import bus_definition
 import xml.etree.ElementTree as ET
-from xml2slave import Xml2Slave
-from xml2ic import Xml2Ic
+from .xml2slave import Xml2Slave
+from .xml2ic import Xml2Ic
 
-import helper.customlogging as xml2vhdl_logging
+from .helper import customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
 
 

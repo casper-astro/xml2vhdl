@@ -28,13 +28,12 @@ import binascii
 import textwrap
 import numpy as np
 import xml.dom.minidom
-import helper.string_io
-import helper.arguments as arguments
-import helper.bus_definition
 import lxml.etree as ET
-from xml2htmltable import xml2html
+from . import helper
+from .helper import arguments
+from .xml2htmltable import xml2html
 
-import helper.customlogging as xml2vhdl_logging
+from .helper import customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
 
 version = [1.8, "Replaced optparse with argparse",
@@ -320,7 +319,7 @@ def dec_check_bit(add_list, bit):
         if there are not different bits
 
     """
-    for b in reversed(range(0, bit)):
+    for b in reversed(list(range(0, bit))):
         for add0 in add_list:
             for add1 in add_list:
                 if add0[b] != add1[b]:
@@ -365,7 +364,7 @@ def dec_route_add(tree_dict):
     """
     done = 0
     logger.debug('tree_dict: {tree_dict}'.format(tree_dict=tree_dict))
-    for path in tree_dict.keys():
+    for path in list(tree_dict.keys()):
         add_list = tree_dict[path]
         b = dec_check_bit(add_list,dec_get_last_bit(path))
         if b > -1:
@@ -438,7 +437,7 @@ def get_decoder_mask(address_list):
         if tree_dict[bit_path] != []:
             add_bits = tree_dict[bit_path][0]
             add = ""
-            for n in reversed(range(32)):
+            for n in reversed(list(range(32))):
                 add = add + str(add_bits[n])
             bit_list = bit_path.split("_")
             mask = 0
@@ -486,7 +485,7 @@ class Xml2Ic:
             self.logger.info('-' * 80)
             self.logger.info("History Log:")
             self.logger.info('-' * 80)
-            for n in range(len(version)/2):
+            for n in range(len(version)//2):
                 self.logger.info("version {}"
                                  .format(version[2*n]))
                 dedented_text = textwrap.dedent(re.sub(r" +", ' ', version[2*n+1])).strip()
@@ -536,7 +535,7 @@ class Xml2Ic:
                 xml_file_name = re.sub(r".*?\.", "", xml_file_name[::-1])[::-1]
                 xml_file_name = xml_file_name + "_output.xml"
 
-                xml_compressed = zlib.compress(myxml)
+                xml_compressed = zlib.compress(myxml.encode('utf8'))
                 xml_compressed = binascii.hexlify(xml_compressed)
                 xml_compressed = helper.string_io.hex_format(len(xml_compressed)/2) + xml_compressed
                 bram_init = ""
@@ -560,11 +559,11 @@ class Xml2Ic:
             while True:
                 todo = 0
                 for node in root.iter('node'):
-                    if 'hw_type' in node.attrib.keys():
+                    if 'hw_type' in list(node.attrib.keys()):
                         hw_type = node.attrib['hw_type']
                     else:
                         hw_type = ""
-                    if 'link' in node.attrib.keys() and not ('link_done' in node.attrib.keys()):
+                    if 'link' in list(node.attrib.keys()) and not ('link_done' in list(node.attrib.keys())):
                         link = get_xml_file(node.attrib['link'], options.path)
                         link_tree = ET.parse(link)
                         link_root = link_tree.getroot()
@@ -867,13 +866,13 @@ class Xml2Ic:
 
             self.logger.info('Generated HTML File: {}'
                              .format(html_file_name))
-            xml_compressed = zlib.compress(myxml)
-            xml_compressed = binascii.hexlify(xml_compressed)
-            xml_compressed = helper.string_io.hex_format(len(xml_compressed)/2) + xml_compressed
+            xml_compressed = zlib.compress(myxml.encode('utf8'))
+            #xml_compressed = binascii.hexlify(xml_compressed)
+            xml_compressed = helper.string_io.hex_format(len(xml_compressed)//2) + xml_compressed.hex()
             bram_init = ""
             if len(xml_compressed) % 8 != 0:
                 xml_compressed += "0"*(8-(len(xml_compressed) % 8))
-            for n in range(0, len(xml_compressed)/8):
+            for n in range(0, len(xml_compressed)//8):
                 word = xml_compressed[8*n:8*n+8]
                 bram_init += word + "\n"
             bram_init_file_name = re.sub(r".*?\.", "", xml_base_name[::-1])[::-1]
