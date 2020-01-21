@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     setuptools.setup(
         name="xml2vhdl-ox",
-        version="0.2.0",
+        version="0.2.1",
         author="Department of Physics",
         author_email="xml2vhdl@ox.ac.uk",
         description="XML to VHDL Memory-Mapped Generation",
@@ -30,7 +30,7 @@ if __name__ == "__main__":
         packages=setuptools.find_packages(),
         include_package_data=True,
         classifiers=[
-            "Programming Language :: Python :: 2.7",
+            "Programming Language :: Python :: 3",
             "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
             "Operating System :: POSIX :: Linux",
         ],

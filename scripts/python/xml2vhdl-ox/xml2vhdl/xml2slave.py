@@ -574,11 +574,12 @@ class Xml2Slave:
                         nof_hw_dp_ram += 1
                         snippet = "ipb_<name>_dp_ram_inst: entity " + options.slave_library + ".ipb_" + xml_mm.root.get('id') + "_dp_ram\n"
                         snippet += "generic map(\n"
-                        snippet += "\tram_add_width => <size>,\n"
-                        snippet += "\tram_dat_width => <dat_width>,\n"
+                        snippet += "\tipb_ram_add_width => <size>,\n"
                         snippet += "\tipb_read => " + ipb_read + ",\n"
                         snippet += "\tipb_write => " + ipb_write + ",\n"
                         snippet += "\tipb_read_latency => <ipb_lat>,\n"
+                        snippet += "\tuser_ram_dat_width => <user_dat_width>,\n"
+                        snippet += "\tuser_ram_add_width => <user_add_width>,\n"
                         snippet += "\tuser_read_latency => <user_lat>,\n"
                         snippet += "\tinit_file => \"<init_file>\",\n"
                         snippet += "\tinit_file_format => \"<init_file_format>\"\n"
@@ -596,10 +597,14 @@ class Xml2Slave:
                         snippet += "\t" + "user_rdat => " + xml_mm.root.get('id') + "_<name>_rdat\n"
 
                         snippet += ");\n\n"
-                        size = np.log2(int(node_dict['size']) // bus.atom)
-                        snippet = snippet.replace("<size>", str(int(math.ceil(size))))
-                        snippet = snippet.replace("<dat_width>", str(int(node_dict['hw_dp_ram_width'])))
+                        ipb_size = int(2**(np.log2(int(node_dict['size']))) / bus.atom)
+                        ipb_size_log = int(np.log2(ipb_size))
+                        user_size = int(ipb_size * (float(bus.data_bit_size) / int(node_dict['hw_dp_ram_width'])))
+                        user_size_log = int(np.log2(user_size))
+                        snippet = snippet.replace("<size>", str(ipb_size_log))
                         snippet = snippet.replace("<ipb_lat>", str(int(node_dict['hw_dp_ram_bus_lat'])))
+                        snippet = snippet.replace("<user_dat_width>", str(int(node_dict['hw_dp_ram_width'])))
+                        snippet = snippet.replace("<user_add_width>", str(user_size_log))
                         snippet = snippet.replace("<user_lat>", str(int(node_dict['hw_dp_ram_logic_lat'])))
                         snippet = snippet.replace("<init_file>", str(node_dict['hw_dp_ram_init_file']))
                         snippet = snippet.replace("<init_file_format>", str(node_dict['hw_dp_ram_init_file_format']))
@@ -611,11 +616,11 @@ class Xml2Slave:
                         snippet = "\n" + xml_mm.root.get('id') + "_<name>_clk: in std_logic:='0';"
                         snippet += "\n" + xml_mm.root.get('id') + "_<name>_en: in std_logic:='0';"
                         snippet += "\n" + xml_mm.root.get('id') + "_<name>_we: in std_logic:='0';"
-                        snippet += "\n" + xml_mm.root.get('id') + "_<name>_add: in std_logic_vector(<size> downto 0):=(others=>'0');"
-                        snippet += "\n" + xml_mm.root.get('id') + "_<name>_wdat: in std_logic_vector(<dat_width> downto 0):=(others=>'0');"
-                        snippet += "\n" + xml_mm.root.get('id') + "_<name>_rdat: out std_logic_vector(<dat_width> downto 0);"
-                        snippet = snippet.replace("<size>", str(int(math.ceil(size))-1))
-                        snippet = snippet.replace("<dat_width>", str(int(node_dict['hw_dp_ram_width'])-1))
+                        snippet += "\n" + xml_mm.root.get('id') + "_<name>_add: in std_logic_vector(<user_add_width> downto 0):=(others=>'0');"
+                        snippet += "\n" + xml_mm.root.get('id') + "_<name>_wdat: in std_logic_vector(<user_dat_width> downto 0):=(others=>'0');"
+                        snippet += "\n" + xml_mm.root.get('id') + "_<name>_rdat: out std_logic_vector(<user_dat_width> downto 0);"
+                        snippet = snippet.replace("<user_add_width>", str(user_size_log-1))
+                        snippet = snippet.replace("<user_dat_width>", str(int(node_dict['hw_dp_ram_width'])-1))
                         snippet = snippet.replace("<ipb_lat>", str(int(node_dict['hw_dp_ram_bus_lat'])))
                         snippet = snippet.replace("<user_lat>", str(int(node_dict['hw_dp_ram_logic_lat'])))
                         snippet = snippet.replace("<name>", node_dict['addressable_id'].replace(".", "_"))
@@ -793,7 +798,7 @@ class Xml2Slave:
             # Replacing relevant fields in template IPB_RAM
             #
             if nof_hw_dp_ram > 0:
-                vhdl_text = helper.string_io.read_template_file(os.path.dirname(os.path.abspath(__file__)) + "/template/" + "xml2vhdl" + "_dp_ram.template.vhd")
+                vhdl_text = helper.string_io.read_template_file(os.path.dirname(os.path.abspath(__file__)) + "/template/" + "xml2vhdl" + "_dp_ram_modified.template.vhd")
 
                 vhdl_text = vhdl_text.replace("<BUS>", bus.name)
                 vhdl_text = vhdl_text.replace("<BUS_PREFIX_>", bus.bus_prefix)
@@ -801,6 +806,12 @@ class Xml2Slave:
                 vhdl_text = vhdl_text.replace("<SLAVE_NAME>", xml_mm.root.get('id'))
 
                 helper.string_io.write_vhdl_file("ipb" + "_" + xml_mm.root.get('id') + "_dp_ram.vhd", vhdl_output_folder, vhdl_text)
+
+                # Need to add the asym_bram_tdp.vhd file to the vhdl_output_dir
+                # - Silly hack, I know. Apologies.
+                asym_bram_tdp_text = helper.string_io.read_template_file(os.path.dirname(os.path.abspath(__file__)) + "/template/" + "asym_bram_tdp.vhd")
+                helper.string_io.write_vhdl_file("asym_bram_tdp.vhd", vhdl_output_folder, asym_bram_tdp_text)
+
 
         self.logger.info("Done!")
         self.logger.info('-' * 80)
