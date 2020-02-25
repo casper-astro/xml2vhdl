@@ -85,8 +85,8 @@ architecture behavioral of asym_bram_tdp is
 
     constant minWIDTH : integer := min(WIDTHA,WIDTHB);
     constant maxWIDTH : integer := max(WIDTHA,WIDTHB);
-    constant SIZEA    : integer := 2**WIDTHA;
-    constant SIZEB    : integer := 2**WIDTHB;
+    constant SIZEA    : integer := 2**ADDRWIDTHA;
+    constant SIZEB    : integer := 2**ADDRWIDTHB;
     constant maxSIZE  : integer := max(SIZEA,SIZEB);
     constant RATIO    : integer := maxWIDTH / minWIDTH;
 
