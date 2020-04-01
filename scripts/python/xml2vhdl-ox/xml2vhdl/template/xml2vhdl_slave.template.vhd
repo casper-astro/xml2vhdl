@@ -130,6 +130,7 @@ begin
       end if;
       if <BUS_RST> = '<BUS_RST_VAL>' then
          <BUS_PREFIX_><SLAVE_NAME>_reset(<BUS_PREFIX_><SLAVE_NAME>_int<RESET_GENERICS_MAP>);
+         <BUS_PREFIX_><SLAVE_NAME>_out_we <= <BUS_PREFIX_><SLAVE_NAME>_reset_out_en(<BUS_PREFIX_><SLAVE_NAME>_int);        
       end if;
    end process;
    
