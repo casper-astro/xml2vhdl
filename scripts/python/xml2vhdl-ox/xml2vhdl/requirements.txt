@@ -17,7 +17,7 @@ packaging==19.2
 pygments==2.4.2
 pyparsing==2.4.2
 pytz==2019.3
-pyyaml==3.13
+pyyaml==5.1
 releases==1.6.1
 requests==2.22.0
 semantic-version==2.8.2
