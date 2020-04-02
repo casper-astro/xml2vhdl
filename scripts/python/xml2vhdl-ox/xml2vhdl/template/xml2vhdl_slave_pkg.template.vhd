@@ -90,6 +90,7 @@ package <BUS_PREFIX_><SLAVE_NAME>_pkg is
    
    function <BUS_PREFIX_><SLAVE_NAME>_read_reg(signal <SLAVE_NAME>_decoded: in t_<BUS_PREFIX_><SLAVE_NAME>_decoded;
                                         signal <SLAVE_NAME>: t_<BUS_PREFIX_><SLAVE_NAME>) return std_logic_vector;
+   function <BUS_PREFIX_><SLAVE_NAME>_reset_out_en(signal <SLAVE_NAME>: t_<BUS_PREFIX_><SLAVE_NAME>) return t_<BUS_PREFIX_><SLAVE_NAME>_decoded;
 <REMOVE_IF_BLOCK_ONLY_END>
    
    function <BUS_PREFIX_><SLAVE_NAME>_demux(addr: std_logic_vector) return std_logic_vector;
@@ -124,10 +125,19 @@ package body <BUS_PREFIX_><SLAVE_NAME>_pkg is
 <REMOVE_IF_BLOCK_ONLY_START>
    procedure <BUS_PREFIX_><SLAVE_NAME>_reset(signal <SLAVE_NAME>: inout t_<BUS_PREFIX_><SLAVE_NAME><RESET_GENERICS_PROCEDURE>) is
    begin
-      
+
 <RESET_ASSIGN>
 
    end procedure;
+
+   function <BUS_PREFIX_><SLAVE_NAME>_reset_out_en(signal <SLAVE_NAME>: t_<BUS_PREFIX_><SLAVE_NAME>) return t_<BUS_PREFIX_><SLAVE_NAME>_decoded is
+       variable <SLAVE_NAME>_rst: t_<BUS_PREFIX_><SLAVE_NAME>_decoded;
+   begin
+
+<RESET_OUT_ENABLE>
+  
+     return <SLAVE_NAME>_rst;
+   end function;
    
    procedure <BUS_PREFIX_><SLAVE_NAME>_default_decoded(signal <SLAVE_NAME>: inout t_<BUS_PREFIX_><SLAVE_NAME>_decoded) is
    begin

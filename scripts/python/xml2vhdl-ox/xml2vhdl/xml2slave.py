@@ -251,6 +251,23 @@ class Xml2Slave:
             records_decoded = re.sub(r"<<[0-9]*>>", "", records_decoded)
             records_decoded = re.sub(r"\|", "", records_decoded)
             records_decoded = re.sub(r"/", "", records_decoded)
+
+            #
+            # RESET OUT ENABLE
+            #
+            reset_out_enable = ""
+            snippet = ""
+            for node_id in slave.reverse_dict_key:
+                node_dict = slave.dict[node_id]
+                if node_dict['child_key']:
+                   if node_dict['complete_id'].find("*") == -1:
+                            for child in sorted(node_dict['child_key']):
+                                child_dict = slave.dict[str(child)]
+                                # if the child is a leaf, define it as base type (std_logic or std_logic_vector)
+                                if not child_dict['child_key']:
+                                    snippet += "\t\t" + node_dict['complete_id'] + "_rst." + child_dict['this_id'] + " := '1';\n"
+                            reset_out_enable += snippet
+
             #
             # REGISTER DESCRIPTOR RECORDS
             #
@@ -651,6 +668,7 @@ class Xml2Slave:
             vhdl_text = vhdl_text.replace("<SLAVE_NAME>", xml_mm.root.get('id'))
             vhdl_text = vhdl_text.replace("<RECORDS>\n", records)
             vhdl_text = vhdl_text.replace("<RECORDS_DECODED>\n", records_decoded)
+            vhdl_text = vhdl_text.replace("<RESET_OUT_ENABLE>\n", reset_out_enable)           
             vhdl_text = vhdl_text.replace("<DESCRIPTOR_RECORDS>\n", descr_records)
             vhdl_text = vhdl_text.replace("<DESCRIPTOR_RECORDS_INIT>\n", descr_records_init)
             vhdl_text = vhdl_text.replace("<RESET_GENERICS_PROCEDURE>", helper.string_io.indent(reset_generics_procedure, 0))
