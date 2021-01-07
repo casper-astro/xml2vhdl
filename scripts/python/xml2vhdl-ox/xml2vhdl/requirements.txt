@@ -10,7 +10,7 @@ idna==2.8
 imagesize==1.1.0
 jinja2==2.10.3
 logging==0.4.9.6
-lxml==4.3.0
+lxml==4.6.2
 markupsafe==1.1.1
 numpy==1.16.0
 packaging==19.2
