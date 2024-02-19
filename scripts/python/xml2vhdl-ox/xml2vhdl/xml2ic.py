@@ -410,7 +410,7 @@ def get_decoder_mask(address_list):
     add_num = len(addresses)
     logger.info('Addresses are: {}'
                 .format(add_num))
-    baddr = np.zeros((add_num, 32), dtype=np.int)
+    baddr = np.zeros((add_num, 32), dtype=int)
     decode_dict = {}
     tree_dict = {}
    
