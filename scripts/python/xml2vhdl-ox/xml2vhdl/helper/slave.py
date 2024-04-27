@@ -401,7 +401,7 @@ class Slave:
         add_num = len(addresses)
         logger.info('Addresses are: {add_num}'
                     .format(add_num=add_num))
-        baddr = np.zeros((add_num, 32), dtype=np.int)
+        baddr = np.zeros((add_num, 32), dtype=int)
         tree_dict = {}
 
         # building address array
