@@ -109,7 +109,7 @@ def file_list_generate(path_list, ext):
 
 # read template file
 def read_template_file(file_name):
-    template_file = open(file_name, "rU")
+    template_file = open(file_name, "r")
     text = template_file.read()
     text = normalize_template(text)
     template_file.close()
