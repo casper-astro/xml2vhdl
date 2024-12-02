@@ -26,4 +26,4 @@ snowballstemmer==2.0.0
 sphinx==1.7.9
 sphinxcontrib-websupport==1.1.2
 typing==3.7.4.1 ; python_version < '3.5'
-urllib3==1.24.2
+urllib3==1.26.5
