@@ -12,7 +12,7 @@ jinja2==2.10.3
 logging==0.4.9.6
 lxml==4.3.0
 markupsafe==1.1.1
-numpy==1.16.0
+numpy==1.22.0
 packaging==19.2
 pygments==2.4.2
 pyparsing==2.4.2
