@@ -8,7 +8,7 @@ colorlog==4.0.2
 docutils==0.15.2
 idna==2.8
 imagesize==1.1.0
-jinja2==2.10.3
+jinja2==2.11.3
 logging==0.4.9.6
 lxml==4.3.0
 markupsafe==1.1.1
