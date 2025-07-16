@@ -36,7 +36,8 @@ from .xml2htmltable import xml2html
 from .helper import customlogging as xml2vhdl_logging
 logger = xml2vhdl_logging.config_logger(__name__)
 
-version = [1.8, "Replaced optparse with argparse",
+version = [1.9, "Changed array init syntax during vhdl gen line 717",
+           1.8, "Replaced optparse with argparse",
            1.7, "major refactoring",
            1.6, "merge node correction",
            1.5, "bram init file containing zip compressed xml",
@@ -708,14 +709,16 @@ class Xml2Ic:
                 slave_type = snippet
 
                 snippet = "("
-                for address in sorted(vhdl_address):
+                for indx,address in enumerate(sorted(vhdl_address)):
+                    snippet += "\n        {} => ".format(indx)
                     snippet += "X\"" + helper.string_io.hex_format(address) + "\","
                 snippet = snippet[0:-1]
                 snippet += ")"
                 slave_base_addr = snippet
 
                 snippet = "("
-                for address in sorted(vhdl_address):
+                for indx,address in enumerate(sorted(vhdl_address)):
+                    snippet += "\n        {} => ".format(indx)
                     snippet += "X\"" + helper.string_io.hex_format(vhdl_decoder_mask[str(address)]) + "\","
                 snippet = snippet[0:-1]
                 snippet += ")"
