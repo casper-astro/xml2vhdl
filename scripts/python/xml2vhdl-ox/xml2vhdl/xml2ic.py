@@ -434,7 +434,7 @@ def get_decoder_mask(address_list):
             break
   
     for bit_path in tree_dict:
-        if tree_dict[bit_path] != []:
+        if len(tree_dict[bit_path]) != 0:
             add_bits = tree_dict[bit_path][0]
             add = ""
             for n in reversed(list(range(32))):
